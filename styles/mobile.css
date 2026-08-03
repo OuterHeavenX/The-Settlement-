@@ -1,7 +1,185 @@
-@media(max-width:760px){
- #topbar{overflow-x:auto;padding-bottom:4px}.resource-pill{min-width:68px;font-size:12px;padding:6px 8px}.xp-wrap{min-width:135px}
- #questbox{top:64px;width:52vw;padding:9px}
- #buildmenu,#panel{left:8px;right:8px;top:auto;bottom:86px;width:auto;max-height:58vh}
- #bottomnav{left:8px;right:8px;transform:none;justify-content:flex-start}.navbtn{min-width:70px;font-size:12px}
- .build-card{grid-template-columns:46px 1fr auto}.build-icon{width:44px;height:44px}
+
+/* ============================================================
+   MOBILE / TABLET RESPONSIVE LAYOUT
+   Landscape remains close to the desktop presentation.
+   Portrait uses a purpose-built HUD + bottom-sheet interface.
+   ============================================================ */
+
+@media (max-width: 900px) and (orientation: landscape){
+ #topbar{overflow-x:auto;padding-bottom:4px}
+ .resource-pill{min-width:68px;font-size:12px;padding:6px 8px}
+ .xp-wrap{min-width:135px}
+ #questbox{top:64px;width:42vw;padding:9px}
+ #buildmenu,#panel{left:auto;right:8px;top:68px;bottom:82px;width:min(350px,44vw);max-height:none}
+ #bottomnav{left:8px;right:8px;transform:none;justify-content:flex-start}
+ .navbtn{min-width:70px;font-size:12px}
+ .build-card{grid-template-columns:46px 1fr auto}
+ .build-icon{width:44px;height:44px}
+}
+
+/* Portrait phone/tablet: compact HUD, quest strip, usable world,
+   bottom-sheet panels, and a 2-row nav instead of horizontal overflow. */
+@media (orientation: portrait) and (max-width: 900px){
+ :root{--portrait-nav-h:116px}
+
+ #topbar{
+  top:max(7px,env(safe-area-inset-top));
+  left:8px;right:8px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  align-items:stretch;
+  overflow:visible;
+ }
+ .resource-pill,.day-pill{
+  min-width:0;
+  padding:6px 4px;
+  border-radius:13px;
+  font-size:12px;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+ }
+ .resource-pill b{font-size:14px}
+ .resource-pill:nth-child(5){
+  grid-column:1/2;
+ }
+ .xp-wrap{
+  grid-column:2/5;
+  min-width:0;
+  text-align:left;
+  padding:6px 9px;
+ }
+ .xp-wrap small{font-size:10px}
+ .day-pill{
+  grid-column:1/5;
+  padding:4px 8px;
+  font-size:11px;
+  opacity:.96;
+ }
+
+ #questbox{
+  left:10px;right:10px;
+  top:112px;
+  width:auto;
+  padding:10px 48px 10px 12px;
+  max-height:92px;
+  overflow:auto;
+  border-radius:12px;
+ }
+ #questbox h3{font-size:16px;margin:0 0 3px}
+ .quest-step{font-size:13px;line-height:1.25}
+
+ /* Give the map a useful central viewport. */
+ #toast-stack{top:206px;width:86vw}
+ .toast{font-size:12px;text-align:center}
+ #placement-help{
+  bottom:calc(var(--portrait-nav-h) + 8px + env(safe-area-inset-bottom));
+  width:calc(100vw - 24px);
+  text-align:center;
+  font-size:12px;
+ }
+
+ /* Contextual panels become controlled bottom sheets. */
+ #buildmenu,#panel{
+  left:10px;right:10px;
+  top:auto;
+  bottom:calc(var(--portrait-nav-h) + 10px + env(safe-area-inset-bottom));
+  width:auto;
+  max-height:38vh;
+  padding:15px 14px 14px;
+  overflow:auto;
+  border-radius:16px;
+  box-shadow:0 10px 28px #0009,inset 0 0 0 2px #f4e7c7;
+ }
+ #buildmenu h2,#panel h2{
+  margin:0 0 10px;
+  padding-right:52px;
+  font-size:28px;
+  line-height:1.05;
+ }
+ #panel h3{margin:10px 0 6px;font-size:21px}
+ #panel p{margin:8px 0;line-height:1.25}
+ .panel-close{
+  position:sticky;
+  float:right;
+  top:0;
+  margin:-5px -3px 4px 8px;
+  width:44px;height:44px;
+  font-size:31px;
+ }
+ #buildmenu>h2,#panel>h2{padding-right:0}
+
+ .farm-meter{margin:8px 0 12px}
+ .farm-meter span{font-size:14px}
+ .farm-meter>b{font-size:18px}
+ .farm-meter i{height:10px}
+ .crop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .crop-choice{min-height:68px;padding:8px}
+ .crop-choice span{font-size:25px}
+ .crop-choice small{font-size:10px}
+
+ .build-card{
+  grid-template-columns:44px minmax(0,1fr) auto;
+  gap:7px;
+  padding:8px;
+  margin:6px 0;
+ }
+ .build-icon{width:42px;height:42px;font-size:25px}
+ .build-card b{font-size:14px}
+ .build-card small{font-size:10px}
+ .cost{font-size:10px}
+ .wood-button{min-height:42px;padding:9px 12px}
+
+ /* Eight navigation items fit in two rows; no off-screen scrolling. */
+ #bottomnav{
+  left:8px;right:8px;
+  bottom:max(6px,env(safe-area-inset-bottom));
+  transform:none;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:5px;
+  max-width:none;
+  height:var(--portrait-nav-h);
+  overflow:hidden;
+  padding:7px;
+  border-radius:16px;
+ }
+ .navbtn{
+  min-width:0;
+  min-height:46px;
+  padding:5px 3px;
+  border:1px solid #5e4428;
+  border-radius:10px;
+  font-size:10px;
+  letter-spacing:.15px;
+  background:#2a1d12;
+ }
+ .navbtn.active{
+  background:linear-gradient(#8a5b33,#684123);
+  border-color:#c18d4f;
+  box-shadow:inset 0 1px #c99a65;
+ }
+
+ .modal-backdrop{padding:12px}
+ .modal{
+  position:relative;
+  width:min(94vw,440px);
+  max-height:72vh;
+  overflow:auto;
+  margin:0;
+  padding:18px 16px;
+ }
+ .modal .panel-close{position:absolute;float:none;top:8px;right:8px;margin:0}
+
+ #debug{top:204px;font-size:10px;max-width:48vw}
+}
+
+/* Very short portrait screens: save even more map area. */
+@media (orientation: portrait) and (max-height: 700px){
+ :root{--portrait-nav-h:100px}
+ #questbox{top:106px;max-height:76px}
+ #buildmenu,#panel{max-height:34vh}
+ #bottomnav{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:5px}
+ .navbtn{min-height:40px}
 }

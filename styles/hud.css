@@ -7,3 +7,14 @@
 .toast{background:#23190fe9;color:#f9e7bd;border:1px solid #aa844a;border-radius:10px;padding:9px 14px;box-shadow:0 6px 18px #0006;animation:toastIn .25s ease}
 @keyframes toastIn{from{opacity:0;transform:translateY(-8px)}}
 #debug{position:absolute;right:8px;top:70px;background:#000c;color:#9dff8d;padding:8px;font:11px monospace;pointer-events:none;white-space:pre}
+
+#questbox{position:absolute}
+.quest-close{
+ position:absolute;right:8px;top:8px;width:34px;height:34px;
+ border-radius:50%;border:1px solid #4b301a;
+ background:#2c2117;color:#f7e9c5;
+ display:grid;place-items:center;padding:0;
+ font:700 23px/1 Arial,sans-serif;
+ pointer-events:auto
+}
+.quest-close:active{transform:scale(.96)}
