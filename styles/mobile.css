@@ -8,137 +8,129 @@
 
 
 /* ============================================================
-   v0.1.4 PORTRAIT MODAL VISIBILITY FIX
-   Fixed header/X + internally scrolling content.
-   Landscape is intentionally not targeted here.
+   v0.1.5 — NARROW-SCREEN HUD + NAV GUARANTEE
+   Uses width instead of orientation so iPhone Safari cannot
+   fall back to the desktop flex overflow layout.
    ============================================================ */
-@media (orientation: portrait) and (max-width:900px){
- :root{
-  --panel-safe-top:max(8px,env(safe-area-inset-top));
-  --panel-safe-bottom:max(8px,env(safe-area-inset-bottom));
-  --panel-nav-space:calc(var(--portrait-nav-h,116px) + var(--panel-safe-bottom) + 10px);
-  --panel-top-space:118px;
+@media (max-width:600px){
+ :root{--portrait-nav-h:108px}
+
+ /* Force the resource HUD to fit entirely inside the viewport. */
+ #topbar{
+  left:6px!important;
+  right:6px!important;
+  width:auto!important;
+  max-width:calc(100vw - 12px)!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:4px!important;
+  align-items:stretch!important;
+  overflow:visible!important;
  }
 
+ #topbar .resource-pill,
+ #topbar .day-pill{
+  min-width:0!important;
+  width:auto!important;
+  max-width:none!important;
+  padding:5px 2px!important;
+  border-radius:12px!important;
+  font-size:10px!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+ }
+
+ #topbar .resource-pill b{font-size:12px!important}
+
+ /* Gold / wood / stone / food / population occupy row 1. */
+ #topbar .resource-pill:nth-child(1),
+ #topbar .resource-pill:nth-child(2),
+ #topbar .resource-pill:nth-child(3),
+ #topbar .resource-pill:nth-child(4),
+ #topbar .resource-pill:nth-child(5){
+  grid-column:auto!important;
+  grid-row:1!important;
+ }
+
+ /* XP uses most of row 2; day/season gets a compact right cell. */
+ #topbar .xp-wrap{
+  grid-column:1/5!important;
+  grid-row:2!important;
+  min-width:0!important;
+  padding:5px 7px!important;
+  text-align:left!important;
+ }
+ #topbar .xp-wrap small{font-size:9px!important}
+
+ #topbar .day-pill{
+  grid-column:5/6!important;
+  grid-row:2!important;
+  padding:5px 2px!important;
+  font-size:9px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:normal!important;
+  line-height:1.05!important;
+ }
+
+ /* Quest starts under the two-row HUD instead of overlapping it. */
+ #questbox{
+  top:96px!important;
+  left:8px!important;
+  right:8px!important;
+  width:auto!important;
+  max-width:none!important;
+ }
+
+ /* Guarantee all eight nav buttons are visible:
+    4 columns × 2 rows, no horizontal scrolling. */
+ #bottomnav{
+  left:6px!important;
+  right:6px!important;
+  width:auto!important;
+  max-width:none!important;
+  height:var(--portrait-nav-h)!important;
+  bottom:max(6px,env(safe-area-inset-bottom))!important;
+  transform:none!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,minmax(0,1fr))!important;
+  gap:4px!important;
+  padding:6px!important;
+  overflow:hidden!important;
+ }
+
+ #bottomnav .navbtn{
+  min-width:0!important;
+  width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:4px 2px!important;
+  font-size:10px!important;
+  line-height:1.05!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  border:1px solid #5e4428!important;
+  border-radius:9px!important;
+ }
+
+ /* Keep panel/placement spacing aligned with the guaranteed nav height. */
+ #placement-help{
+  bottom:calc(var(--portrait-nav-h) + 8px + env(safe-area-inset-bottom))!important;
+ }
  #buildmenu,#panel{
-  left:10px;
-  right:10px;
-  width:auto;
-  top:var(--panel-top-space);
-  bottom:var(--panel-nav-space);
-  max-height:none;
-  height:auto;
-  padding:0;
-  overflow:hidden;
-  border-radius:16px;
- }
-
- /* Defensive dynamic-viewport cap for Safari browser chrome changes. */
- #buildmenu,#panel{
-  max-height:calc(
-   100dvh
-   - var(--panel-top-space)
-   - var(--panel-nav-space)
-  );
- }
-
- #buildmenu .panel-header,#panel .panel-header{
-  flex:0 0 auto;
-  min-height:54px;
-  padding:7px 8px 6px 12px;
- }
-
- #buildmenu .panel-header h2,#panel .panel-header h2{
-  font-size:24px;
-  margin:0;
- }
-
- #buildmenu .panel-scroll,#panel .panel-scroll{
-  flex:1 1 auto;
-  min-height:0;
-  padding:8px 12px 11px;
-  overflow-y:auto;
-  overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior:contain;
-  touch-action:pan-y;
- }
-
- /* The X lives in the non-scrolling header, not in scroll content. */
- #buildmenu .panel-close,#panel .panel-close{
-  position:static;
-  float:none;
-  flex:0 0 44px;
-  width:44px;
-  height:44px;
-  margin:0;
-  font-size:30px;
- }
-
- /* Compact only portrait panel internals; retain readable type. */
- #panel .panel-scroll>p{margin:6px 0;line-height:1.22}
- #panel .panel-scroll h3{margin:8px 0 5px;font-size:19px}
- #panel .farm-meter{margin:6px 0 9px}
- #panel .farm-meter i{margin-top:3px;height:9px}
- #panel .crop-grid{gap:6px;margin:6px 0 8px}
- #panel .crop-choice{min-height:60px;padding:7px}
- #panel .wood-button{min-height:42px}
-
- /* Build list gets the same stable header/body treatment. */
- #buildmenu .category-tabs{
-  position:sticky;
-  top:0;
-  z-index:5;
-  padding-bottom:5px;
-  margin-bottom:5px;
-  background:linear-gradient(#ead8ae,#dfc38d);
- }
-
- /* Offline modal follows same fixed-header principle. */
- .modal-backdrop{
-  padding:
-   calc(var(--panel-safe-top) + 8px)
-   12px
-   calc(var(--panel-safe-bottom) + 8px);
-  overflow:hidden;
- }
- .modal{
-  width:min(94vw,440px);
-  max-height:calc(
-   100dvh
-   - var(--panel-safe-top)
-   - var(--panel-safe-bottom)
-   - 32px
-  );
-  padding:0;
-  overflow:hidden;
- }
- .modal .panel-header{
-  min-height:54px;
- }
- .modal .panel-close{
-  position:static;
-  float:none;
-  margin:0;
-  width:44px;
-  height:44px;
- }
- .modal .panel-scroll{
-  min-height:0;
-  overflow-y:auto;
-  touch-action:pan-y;
+  bottom:calc(var(--portrait-nav-h) + 10px + env(safe-area-inset-bottom))!important;
  }
 }
 
-/* Short iPhones: preserve X visibility by shrinking content viewport,
-   never by moving the header outside the screen. */
-@media (orientation:portrait) and (max-width:900px) and (max-height:700px){
- :root{
-  --panel-top-space:106px;
-  --panel-nav-space:calc(var(--portrait-nav-h,100px) + var(--panel-safe-bottom) + 8px);
- }
- #buildmenu,#panel{max-height:none}
- #buildmenu .panel-header,#panel .panel-header{min-height:50px}
- #buildmenu .panel-header h2,#panel .panel-header h2{font-size:22px}
- #buildmenu .panel-scroll,#panel .panel-scroll{padding-top:6px;padding-bottom:8px}
+/* Extra-small iPhones */
+@media (max-width:380px){
+ #topbar .resource-pill,
+ #topbar .day-pill{font-size:9px!important}
+ #topbar .resource-pill b{font-size:11px!important}
+ #bottomnav .navbtn{font-size:9px!important}
 }
