@@ -134,3 +134,135 @@
  #topbar .resource-pill b{font-size:11px!important}
  #bottomnav .navbtn{font-size:9px!important}
 }
+
+
+/* ============================================================
+   v0.1.6 — FINAL PORTRAIT ALIGNMENT
+   Explicit narrow-screen cascade. Keeps the existing game/map
+   untouched and guarantees no desktop-style HUD/nav overflow.
+   ============================================================ */
+@media screen and (max-width:600px){
+ html,body,#game-shell,#ui-root{
+  width:100%;
+  max-width:100%;
+ }
+
+ #topbar{
+  box-sizing:border-box!important;
+  left:max(6px,env(safe-area-inset-left))!important;
+  right:max(6px,env(safe-area-inset-right))!important;
+  width:auto!important;
+  max-width:none!important;
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  grid-template-rows:auto auto auto!important;
+  column-gap:4px!important;
+  row-gap:4px!important;
+  overflow:visible!important;
+ }
+
+ #topbar>.resource-pill{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+ }
+
+ #topbar>.resource-pill:nth-child(-n+5){
+  grid-row:1!important;
+ }
+
+ /* Town XP gets its own full-width row. */
+ #topbar>.xp-wrap{
+  grid-column:1/-1!important;
+  grid-row:2!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  display:grid!important;
+  grid-template-columns:auto 1fr auto!important;
+  grid-template-rows:auto!important;
+  align-items:center!important;
+  gap:6px!important;
+  padding:5px 8px!important;
+  white-space:nowrap!important;
+ }
+
+ #topbar>.xp-wrap .xpbar{
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+ }
+ #topbar>.xp-wrap small{
+  font-size:9px!important;
+  white-space:nowrap!important;
+ }
+
+ /* Day/season remains available as a small third-row strip. */
+ #topbar>.day-pill{
+  grid-column:1/-1!important;
+  grid-row:3!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  min-height:20px!important;
+  padding:3px 6px!important;
+  font-size:9px!important;
+  line-height:1!important;
+ }
+
+ #questbox{
+  top:124px!important;
+  left:max(8px,env(safe-area-inset-left))!important;
+  right:max(8px,env(safe-area-inset-right))!important;
+  width:auto!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+ }
+
+ #bottomnav{
+  box-sizing:border-box!important;
+  left:max(6px,env(safe-area-inset-left))!important;
+  right:max(6px,env(safe-area-inset-right))!important;
+  width:auto!important;
+  max-width:none!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-rows:repeat(2,minmax(44px,1fr))!important;
+  gap:4px!important;
+  height:104px!important;
+  min-height:104px!important;
+  padding:5px!important;
+  overflow:visible!important;
+  transform:none!important;
+ }
+
+ #bottomnav>.navbtn{
+  box-sizing:border-box!important;
+  min-width:0!important;
+  max-width:100%!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:44px!important;
+  margin:0!important;
+  padding:4px 2px!important;
+  font-size:10px!important;
+  line-height:1.05!important;
+  white-space:normal!important;
+  overflow:hidden!important;
+ }
+
+ #placement-help{
+  bottom:calc(116px + env(safe-area-inset-bottom))!important;
+ }
+ #buildmenu,#panel{
+  bottom:calc(118px + env(safe-area-inset-bottom))!important;
+ }
+}
+
+@media screen and (max-width:390px){
+ #topbar{column-gap:3px!important}
+ #topbar .resource-pill{font-size:9px!important;padding-left:1px!important;padding-right:1px!important}
+ #topbar .resource-pill b{font-size:11px!important}
+ #bottomnav>.navbtn{font-size:9px!important}
+}
