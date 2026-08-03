@@ -1,0 +1,7 @@
+@media(max-width:760px){
+ #topbar{overflow-x:auto;padding-bottom:4px}.resource-pill{min-width:68px;font-size:12px;padding:6px 8px}.xp-wrap{min-width:135px}
+ #questbox{top:64px;width:52vw;padding:9px}
+ #buildmenu,#panel{left:8px;right:8px;top:auto;bottom:86px;width:auto;max-height:58vh}
+ #bottomnav{left:8px;right:8px;transform:none;justify-content:flex-start}.navbtn{min-width:70px;font-size:12px}
+ .build-card{grid-template-columns:46px 1fr auto}.build-icon{width:44px;height:44px}
+}

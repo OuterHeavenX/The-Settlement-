@@ -1,0 +1,11 @@
+:root{--ink:#21190f;--paper:#e8d3a4;--paper2:#c9ab73;--wood:#5e3d23;--wood2:#2d1c12;--iron:#45433e;--gold:#d7ad4b;--green:#587a3a;--red:#923d2d;--cream:#f7e9c5}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body,#game-shell{margin:0;width:100%;height:100%;overflow:hidden;background:#16130d;font-family:Georgia,"Times New Roman",serif;color:var(--ink)}
+body{touch-action:none;overscroll-behavior:none}
+#game-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:#78985a}
+#ui-root{position:absolute;inset:0;pointer-events:none;user-select:none}
+button{font:inherit}
+.medieval-panel{background:linear-gradient(#ead8ae,#c7a66e);border:3px solid #422b18;box-shadow:0 8px 24px #0007,inset 0 0 0 2px #f4e7c7;border-radius:12px}
+.wood-button{pointer-events:auto;background:linear-gradient(#885a31,#513119);color:#fff2cd;border:2px solid #2d1a0e;border-radius:10px;box-shadow:inset 0 2px #b17a45,0 4px #29170c;padding:10px 14px;font-weight:700;text-shadow:0 1px 1px #000}
+.wood-button:active{transform:translateY(2px);box-shadow:inset 0 2px #b17a45,0 2px #29170c}
+.hidden{display:none!important}

@@ -1,0 +1,9 @@
+#topbar{position:absolute;top:max(8px,env(safe-area-inset-top));left:8px;right:8px;display:flex;gap:6px;align-items:center;pointer-events:none}
+.resource-pill,.day-pill{background:#2c2117e8;color:#f7e9c5;border:1px solid #9d7a46;border-radius:18px;padding:7px 10px;min-width:74px;box-shadow:0 3px 10px #0005;font-size:13px}
+.resource-pill b{color:#ffe39a}.xp-wrap{min-width:160px}.xpbar{height:7px;border-radius:8px;background:#1a140e;overflow:hidden;margin-top:4px}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#79a84e,#d7ad4b)}
+#questbox{position:absolute;left:10px;top:70px;width:min(310px,42vw);padding:12px;pointer-events:auto}
+#questbox h3{margin:0 0 4px;font-size:15px}.quest-step{font-size:13px;line-height:1.3}.quest-step strong{color:#70341f}
+#toast-stack{position:absolute;left:50%;top:86px;transform:translateX(-50%);display:grid;gap:8px;pointer-events:none}
+.toast{background:#23190fe9;color:#f9e7bd;border:1px solid #aa844a;border-radius:10px;padding:9px 14px;box-shadow:0 6px 18px #0006;animation:toastIn .25s ease}
+@keyframes toastIn{from{opacity:0;transform:translateY(-8px)}}
+#debug{position:absolute;right:8px;top:70px;background:#000c;color:#9dff8d;padding:8px;font:11px monospace;pointer-events:none;white-space:pre}
