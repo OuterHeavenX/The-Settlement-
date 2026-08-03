@@ -1,185 +1,144 @@
+@media(max-width:760px){
+ #topbar{overflow-x:auto;padding-bottom:4px}.resource-pill{min-width:68px;font-size:12px;padding:6px 8px}.xp-wrap{min-width:135px}
+ #questbox{top:64px;width:52vw;padding:9px}
+ #buildmenu,#panel{left:8px;right:8px;top:auto;bottom:86px;width:auto;max-height:58vh}
+ #bottomnav{left:8px;right:8px;transform:none;justify-content:flex-start}.navbtn{min-width:70px;font-size:12px}
+ .build-card{grid-template-columns:46px 1fr auto}.build-icon{width:44px;height:44px}
+}
+
 
 /* ============================================================
-   MOBILE / TABLET RESPONSIVE LAYOUT
-   Landscape remains close to the desktop presentation.
-   Portrait uses a purpose-built HUD + bottom-sheet interface.
+   v0.1.4 PORTRAIT MODAL VISIBILITY FIX
+   Fixed header/X + internally scrolling content.
+   Landscape is intentionally not targeted here.
    ============================================================ */
-
-@media (max-width: 900px) and (orientation: landscape){
- #topbar{overflow-x:auto;padding-bottom:4px}
- .resource-pill{min-width:68px;font-size:12px;padding:6px 8px}
- .xp-wrap{min-width:135px}
- #questbox{top:64px;width:42vw;padding:9px}
- #buildmenu,#panel{left:auto;right:8px;top:68px;bottom:82px;width:min(350px,44vw);max-height:none}
- #bottomnav{left:8px;right:8px;transform:none;justify-content:flex-start}
- .navbtn{min-width:70px;font-size:12px}
- .build-card{grid-template-columns:46px 1fr auto}
- .build-icon{width:44px;height:44px}
-}
-
-/* Portrait phone/tablet: compact HUD, quest strip, usable world,
-   bottom-sheet panels, and a 2-row nav instead of horizontal overflow. */
-@media (orientation: portrait) and (max-width: 900px){
- :root{--portrait-nav-h:116px}
-
- #topbar{
-  top:max(7px,env(safe-area-inset-top));
-  left:8px;right:8px;
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:5px;
-  align-items:stretch;
-  overflow:visible;
- }
- .resource-pill,.day-pill{
-  min-width:0;
-  padding:6px 4px;
-  border-radius:13px;
-  font-size:12px;
-  text-align:center;
-  white-space:nowrap;
-  overflow:hidden;
- }
- .resource-pill b{font-size:14px}
- .resource-pill:nth-child(5){
-  grid-column:1/2;
- }
- .xp-wrap{
-  grid-column:2/5;
-  min-width:0;
-  text-align:left;
-  padding:6px 9px;
- }
- .xp-wrap small{font-size:10px}
- .day-pill{
-  grid-column:1/5;
-  padding:4px 8px;
-  font-size:11px;
-  opacity:.96;
+@media (orientation: portrait) and (max-width:900px){
+ :root{
+  --panel-safe-top:max(8px,env(safe-area-inset-top));
+  --panel-safe-bottom:max(8px,env(safe-area-inset-bottom));
+  --panel-nav-space:calc(var(--portrait-nav-h,116px) + var(--panel-safe-bottom) + 10px);
+  --panel-top-space:118px;
  }
 
- #questbox{
-  left:10px;right:10px;
-  top:112px;
-  width:auto;
-  padding:10px 48px 10px 12px;
-  max-height:92px;
-  overflow:auto;
-  border-radius:12px;
- }
- #questbox h3{font-size:16px;margin:0 0 3px}
- .quest-step{font-size:13px;line-height:1.25}
-
- /* Give the map a useful central viewport. */
- #toast-stack{top:206px;width:86vw}
- .toast{font-size:12px;text-align:center}
- #placement-help{
-  bottom:calc(var(--portrait-nav-h) + 8px + env(safe-area-inset-bottom));
-  width:calc(100vw - 24px);
-  text-align:center;
-  font-size:12px;
- }
-
- /* Contextual panels become controlled bottom sheets. */
  #buildmenu,#panel{
-  left:10px;right:10px;
-  top:auto;
-  bottom:calc(var(--portrait-nav-h) + 10px + env(safe-area-inset-bottom));
+  left:10px;
+  right:10px;
   width:auto;
-  max-height:38vh;
-  padding:15px 14px 14px;
-  overflow:auto;
-  border-radius:16px;
-  box-shadow:0 10px 28px #0009,inset 0 0 0 2px #f4e7c7;
- }
- #buildmenu h2,#panel h2{
-  margin:0 0 10px;
-  padding-right:52px;
-  font-size:28px;
-  line-height:1.05;
- }
- #panel h3{margin:10px 0 6px;font-size:21px}
- #panel p{margin:8px 0;line-height:1.25}
- .panel-close{
-  position:sticky;
-  float:right;
-  top:0;
-  margin:-5px -3px 4px 8px;
-  width:44px;height:44px;
-  font-size:31px;
- }
- #buildmenu>h2,#panel>h2{padding-right:0}
-
- .farm-meter{margin:8px 0 12px}
- .farm-meter span{font-size:14px}
- .farm-meter>b{font-size:18px}
- .farm-meter i{height:10px}
- .crop-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .crop-choice{min-height:68px;padding:8px}
- .crop-choice span{font-size:25px}
- .crop-choice small{font-size:10px}
-
- .build-card{
-  grid-template-columns:44px minmax(0,1fr) auto;
-  gap:7px;
-  padding:8px;
-  margin:6px 0;
- }
- .build-icon{width:42px;height:42px;font-size:25px}
- .build-card b{font-size:14px}
- .build-card small{font-size:10px}
- .cost{font-size:10px}
- .wood-button{min-height:42px;padding:9px 12px}
-
- /* Eight navigation items fit in two rows; no off-screen scrolling. */
- #bottomnav{
-  left:8px;right:8px;
-  bottom:max(6px,env(safe-area-inset-bottom));
-  transform:none;
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:5px;
-  max-width:none;
-  height:var(--portrait-nav-h);
+  top:var(--panel-top-space);
+  bottom:var(--panel-nav-space);
+  max-height:none;
+  height:auto;
+  padding:0;
   overflow:hidden;
-  padding:7px;
   border-radius:16px;
  }
- .navbtn{
-  min-width:0;
-  min-height:46px;
-  padding:5px 3px;
-  border:1px solid #5e4428;
-  border-radius:10px;
-  font-size:10px;
-  letter-spacing:.15px;
-  background:#2a1d12;
- }
- .navbtn.active{
-  background:linear-gradient(#8a5b33,#684123);
-  border-color:#c18d4f;
-  box-shadow:inset 0 1px #c99a65;
+
+ /* Defensive dynamic-viewport cap for Safari browser chrome changes. */
+ #buildmenu,#panel{
+  max-height:calc(
+   100dvh
+   - var(--panel-top-space)
+   - var(--panel-nav-space)
+  );
  }
 
- .modal-backdrop{padding:12px}
- .modal{
-  position:relative;
-  width:min(94vw,440px);
-  max-height:72vh;
-  overflow:auto;
+ #buildmenu .panel-header,#panel .panel-header{
+  flex:0 0 auto;
+  min-height:54px;
+  padding:7px 8px 6px 12px;
+ }
+
+ #buildmenu .panel-header h2,#panel .panel-header h2{
+  font-size:24px;
   margin:0;
-  padding:18px 16px;
  }
- .modal .panel-close{position:absolute;float:none;top:8px;right:8px;margin:0}
 
- #debug{top:204px;font-size:10px;max-width:48vw}
+ #buildmenu .panel-scroll,#panel .panel-scroll{
+  flex:1 1 auto;
+  min-height:0;
+  padding:8px 12px 11px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+ }
+
+ /* The X lives in the non-scrolling header, not in scroll content. */
+ #buildmenu .panel-close,#panel .panel-close{
+  position:static;
+  float:none;
+  flex:0 0 44px;
+  width:44px;
+  height:44px;
+  margin:0;
+  font-size:30px;
+ }
+
+ /* Compact only portrait panel internals; retain readable type. */
+ #panel .panel-scroll>p{margin:6px 0;line-height:1.22}
+ #panel .panel-scroll h3{margin:8px 0 5px;font-size:19px}
+ #panel .farm-meter{margin:6px 0 9px}
+ #panel .farm-meter i{margin-top:3px;height:9px}
+ #panel .crop-grid{gap:6px;margin:6px 0 8px}
+ #panel .crop-choice{min-height:60px;padding:7px}
+ #panel .wood-button{min-height:42px}
+
+ /* Build list gets the same stable header/body treatment. */
+ #buildmenu .category-tabs{
+  position:sticky;
+  top:0;
+  z-index:5;
+  padding-bottom:5px;
+  margin-bottom:5px;
+  background:linear-gradient(#ead8ae,#dfc38d);
+ }
+
+ /* Offline modal follows same fixed-header principle. */
+ .modal-backdrop{
+  padding:
+   calc(var(--panel-safe-top) + 8px)
+   12px
+   calc(var(--panel-safe-bottom) + 8px);
+  overflow:hidden;
+ }
+ .modal{
+  width:min(94vw,440px);
+  max-height:calc(
+   100dvh
+   - var(--panel-safe-top)
+   - var(--panel-safe-bottom)
+   - 32px
+  );
+  padding:0;
+  overflow:hidden;
+ }
+ .modal .panel-header{
+  min-height:54px;
+ }
+ .modal .panel-close{
+  position:static;
+  float:none;
+  margin:0;
+  width:44px;
+  height:44px;
+ }
+ .modal .panel-scroll{
+  min-height:0;
+  overflow-y:auto;
+  touch-action:pan-y;
+ }
 }
 
-/* Very short portrait screens: save even more map area. */
-@media (orientation: portrait) and (max-height: 700px){
- :root{--portrait-nav-h:100px}
- #questbox{top:106px;max-height:76px}
- #buildmenu,#panel{max-height:34vh}
- #bottomnav{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:5px}
- .navbtn{min-height:40px}
+/* Short iPhones: preserve X visibility by shrinking content viewport,
+   never by moving the header outside the screen. */
+@media (orientation:portrait) and (max-width:900px) and (max-height:700px){
+ :root{
+  --panel-top-space:106px;
+  --panel-nav-space:calc(var(--portrait-nav-h,100px) + var(--panel-safe-bottom) + 8px);
+ }
+ #buildmenu,#panel{max-height:none}
+ #buildmenu .panel-header,#panel .panel-header{min-height:50px}
+ #buildmenu .panel-header h2,#panel .panel-header h2{font-size:22px}
+ #buildmenu .panel-scroll,#panel .panel-scroll{padding-top:6px;padding-bottom:8px}
 }
