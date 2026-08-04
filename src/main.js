@@ -1,1 +1,1 @@
-addEventListener("DOMContentLoaded",()=>{window.game=new Settlement.Game(document.querySelector("#game-canvas"),document.querySelector("#ui-root"));});
+addEventListener("DOMContentLoaded",()=>{window.game=new Settlement.Game(document.querySelector("#game-canvas"),document.querySelector("#ui-root"));let unlock=()=>{window.game?.audio?.unlock();removeEventListener("pointerdown",unlock,true);removeEventListener("touchstart",unlock,true)};addEventListener("pointerdown",unlock,true);addEventListener("touchstart",unlock,true)});
