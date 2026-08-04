@@ -2,18 +2,9 @@ Settlement.ExpansionManager=class{
  constructor(game){this.game=game;let C=Settlement.Config;this.claimedRects=[{x:C.START_X,y:C.START_Y,w:C.START_W,h:C.START_H}];this.claimed=0;this.preview={x:C.START_X+C.START_W,y:C.START_Y+1,w:4,h:6}}
  isClaimed(x,y){return this.claimedRects.some(r=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h)}
  canBuild(type,x,y,w,h){if(type==="archery"||type==="wall"||type==="gate")return this.isNearClaim(x,y,w,h);for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(!this.isClaimed(xx,yy))return false;return true}
- isNearClaim(x,y,w,h){let p=this.preview;for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(this.isClaimed(xx,yy)|| (xx>=p.x-1&&yy>=p.y-1&&xx<=p.x+p.w&&yy<=p.y+p.h))return true;return false}
- tryClaim(){
-  if(this.claimed) return false;
-  let p=this.preview, bs=this.game.buildings.list.filter(b=>b.complete), tower=bs.some(b=>b.type==="archery"&&b.x>=p.x-1&&b.x<=p.x+p.w&&b.y>=p.y-1&&b.y<=p.y+p.h);
-  if(!tower)return false;
-  let walls=bs.filter(b=>(b.type==="wall"||b.type==="gate"));
-  const has=(x,y)=>walls.some(b=>b.x===x&&b.y===y);
-  let gate=walls.some(b=>b.type==="gate"&&(b.x===p.x+p.w||b.y===p.y||b.y===p.y+p.h-1));
-  let score=0,need=0;
-  for(let x=p.x;x<p.x+p.w;x++){need+=2;if(has(x,p.y))score++;if(has(x,p.y+p.h-1))score++}
-  for(let y=p.y;y<p.y+p.h;y++){need++;if(has(p.x+p.w-1,y))score++}
-  if(tower&&gate&&score>=Math.ceil(need*.72)){this.claimedRects.push({...p});this.claimed=1;this.game.bus.emit("territory:claimed",p);return true}
-  return false;
- }
+ isNearClaim(x,y,w,h){let p=this.preview;for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(this.isClaimed(xx,yy)||(xx>=p.x-1&&yy>=p.y-1&&xx<=p.x+p.w&&yy<=p.y+p.h))return true;return false}
+ perimeterCells(){let p=this.preview,cells=[],seen=new Set(),add=(x,y)=>{let k=x+","+y;if(!seen.has(k)){seen.add(k);cells.push({x,y})}};for(let x=p.x;x<p.x+p.w;x++){add(x,p.y);add(x,p.y+p.h-1)}for(let y=p.y+1;y<p.y+p.h-1;y++){add(p.x,y);add(p.x+p.w-1,y)}return cells}
+ status(){if(this.claimed)return{claimed:true,tower:true,gate:true,perimeterPlaced:0,perimeterNeed:0,gaps:0,complete:true};let p=this.preview,bs=this.game.buildings.list.filter(b=>b.complete),tower=bs.some(b=>b.type==="archery"&&b.x>=p.x-1&&b.x<=p.x+p.w&&b.y>=p.y-1&&b.y<=p.y+p.h),defs=bs.filter(b=>b.type==="wall"||b.type==="gate"),cells=this.perimeterCells(),byCell=new Map(defs.map(b=>[b.x+","+b.y,b])),placed=cells.filter(c=>byCell.has(c.x+","+c.y)).length,gate=cells.some(c=>byCell.get(c.x+","+c.y)?.type==="gate"),gaps=cells.length-placed;return{claimed:false,tower,gate,perimeterPlaced:placed,perimeterNeed:cells.length,gaps,complete:tower&&gate&&gaps===0}}
+ progressText(){let s=this.status();if(s.claimed)return"Territory secured.";return`${s.tower?"✓":"○"} Archery Tower • ${s.gate?"✓":"○"} Gate • Walls/Gate ${s.perimeterPlaced}/${s.perimeterNeed}`}
+ tryClaim(){if(this.claimed)return false;let s=this.status();if(!s.complete)return false;this.claimedRects.push({...this.preview});this.claimed=1;this.game.bus.emit("territory:claimed",this.preview);return true}
 };
