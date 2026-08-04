@@ -7,14 +7,12 @@
 .toast{background:#23190fe9;color:#f9e7bd;border:1px solid #aa844a;border-radius:10px;padding:9px 14px;box-shadow:0 6px 18px #0006;animation:toastIn .25s ease}
 @keyframes toastIn{from{opacity:0;transform:translateY(-8px)}}
 #debug{position:absolute;right:8px;top:70px;background:#000c;color:#9dff8d;padding:8px;font:11px monospace;pointer-events:none;white-space:pre}
-
 #questbox{position:absolute}
-.quest-close{
- position:absolute;right:8px;top:8px;width:34px;height:34px;
- border-radius:50%;border:1px solid #4b301a;
- background:#2c2117;color:#f7e9c5;
- display:grid;place-items:center;padding:0;
- font:700 23px/1 Arial,sans-serif;
- pointer-events:auto
-}
+.quest-close{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:1px solid #4b301a;background:#2c2117;color:#f7e9c5;display:grid;place-items:center;padding:0;font:700 23px/1 Arial,sans-serif;pointer-events:auto}
 .quest-close:active{transform:scale(.96)}
+.quest-bubble-safe{position:absolute;right:max(10px,env(safe-area-inset-right));top:76px;z-index:120;width:48px;height:48px;border-radius:50%;border:2px solid #8d6b35;background:radial-gradient(circle at 35% 30%,#f2d79b,#b98a48 70%,#6f4824);box-shadow:0 4px 12px #0007;color:#2d1e11;display:grid;place-items:center;padding:0;pointer-events:auto;touch-action:manipulation}
+.quest-bubble-safe.hidden{display:none}.quest-bubble-safe:active{transform:scale(.95)}
+.quest-bubble-icon{font-size:24px;line-height:1}.quest-bubble-badge{position:absolute;right:-3px;top:-3px;min-width:18px;height:18px;padding:0 4px;border-radius:10px;background:#7b2d20;color:#fff4d6;border:1px solid #e1b76a;font:700 10px/18px Arial,sans-serif;box-sizing:border-box}
+.quest-bubble-safe-close{position:absolute;right:8px;top:8px;z-index:5;width:36px;height:36px;border-radius:50%;border:1px solid #4b301a;background:#2c2117;color:#f7e9c5;display:grid;place-items:center;padding:0;font:700 24px/1 Arial,sans-serif;pointer-events:auto;touch-action:manipulation}
+.quest-bubble-safe-close:active{transform:scale(.95)}
+@media screen and (max-width:600px){.quest-bubble-safe{top:92px;right:max(8px,env(safe-area-inset-right));width:46px;height:46px}.quest-bubble-icon{font-size:22px}#questbox{padding-right:52px}}
