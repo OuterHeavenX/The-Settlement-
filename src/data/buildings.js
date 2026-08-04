@@ -7,7 +7,7 @@ Settlement.BuildingDefs={
  farm:{id:"farm",name:"Farm Plot",category:"Farming",icon:"🌱",footprint:[2,2],cost:{wood:10,gold:15},buildTime:4,xpReward:20,farm:true},
  lumber:{id:"lumber",name:"Lumber Camp",category:"Production",icon:"🪓",footprint:[2,2],cost:{wood:25,stone:8,gold:40},buildTime:7,workers:1,production:{wood:10},xpReward:30},
  quarry:{id:"quarry",name:"Stone Quarry",category:"Production",icon:"⛏️",footprint:[3,2],cost:{wood:55,gold:95},buildTime:11,workers:1,production:{stone:8},xpReward:55,requiredTownLevel:2},
- mason:{id:"mason",name:"Mason's Yard",category:"Production",icon:"🧱",footprint:[2,2],cost:{wood:80,stone:30,gold:135},buildTime:14,workers:1,recipe:"cutStone",xpReward:70,requiredTownLevel:4},
+ mason:{id:"mason",name:"Mason's Yard",category:"Production",icon:"🧱",footprint:[2,2],cost:{wood:80,stone:30,gold:135},buildTime:14,workers:1,recipe:"cutStone",manualRecipe:true,xpReward:70,requiredTownLevel:4},
  warehouse:{id:"warehouse",name:"Warehouse",category:"Civic",icon:"📦",footprint:[2,2],cost:{wood:60,stone:25,gold:90},buildTime:10,storage:400,xpReward:45,requiredTownLevel:2},
  archery:{id:"archery",name:"Archery Tower",category:"Military",icon:"🏹",footprint:[1,1],cost:{wood:80,stone:35,gold:100},buildTime:12,workers:1,range:5,damage:12,fireRate:1.2,xpReward:60,requiredTownLevel:3},
  wall:{id:"wall",name:"Palisade Wall",category:"Military",icon:"🪵",footprint:[1,1],cost:{wood:6},buildTime:1.2,wall:true,xpReward:2},
