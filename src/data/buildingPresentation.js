@@ -1,0 +1,15 @@
+Settlement.BuildingPresentation={
+ cottage:{style:"cottage",materials:["timber","plaster"],roof:"shingle",entrance:"south",chimney:true,props:["firewood","barrel"]},
+ farm:{style:"farm",materials:["soil","crop"],entrance:"south",props:["basket","tool"]},
+ lumber:{style:"lumberCamp",materials:["roughTimber"],roof:"leanTo",entrance:"south",props:["logs","stump","sawhorse"]},
+ warehouse:{style:"warehouse",materials:["timber","stone"],roof:"shingle",entrance:"south",props:["crates","barrels","sacks"]},
+ mill:{style:"mill",materials:["timber","plaster","stone"],roof:"shingle",entrance:"south",chimney:false,props:["grainSacks"],movingPart:"wheel"},
+ bakery:{style:"bakery",materials:["timber","plaster","stone"],roof:"tile",entrance:"south",chimney:true,props:["firewood","breadCrates"],warmWindows:true},
+ quarry:{style:"quarry",materials:["stone","roughTimber"],entrance:"south",props:["rockPile","timberSupport","cart"]},
+ mason:{style:"masonYard",materials:["stone","roughTimber"],roof:"leanTo",entrance:"south",props:["roughStone","cutStone","workbench"]},
+ training:{style:"trainingYard",materials:["dirt","timber"],entrance:"south",props:["dummy","weaponRack","target"]},
+ archery:{style:"archeryTower",materials:["roughTimber"],roof:"shingle",entrance:"south",props:["banner"]},
+ wall:{style:"palisade",materials:["roughTimber"]},
+ gate:{style:"gate",materials:["roughTimber","iron"],entrance:"center"},
+ road:{style:"dirtRoad",materials:["dirt"]}
+};
