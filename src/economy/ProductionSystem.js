@@ -1,1 +1,35 @@
-// Production extension point: ProductionSystem. Core v0.1.0 behavior is currently composed by loaded systems.
+Settlement.ProductionSystem=class{
+ constructor(game){this.game=game}
+ buildings(){return this.game.buildings.list.filter(b=>b.complete&&Settlement.BuildingDefs[b.type]?.recipe)}
+ recipe(b){return Settlement.RecipeDefs[Settlement.BuildingDefs[b.type]?.recipe]}
+ normalize(b){if(!b.production)b.production={active:false,progress:0,recipe:Settlement.BuildingDefs[b.type]?.recipe||null};return b.production}
+ worker(b){return this.game.citizens.list.find(c=>c.workplace===b.id)||null}
+ storageCanFit(recipe){let input=Object.entries(recipe.input).filter(([k])=>this.game.resources.isStoredResource(k)).reduce((a,[,n])=>a+n,0),output=Object.entries(recipe.output).filter(([k])=>this.game.resources.isStoredResource(k)).reduce((a,[,n])=>a+n,0);return this.game.resources.remainingCapacity()+input>=output}
+ canStart(b){let r=this.recipe(b);return !!(r&&(b.workers||0)>0&&this.game.resources.has(r.input)&&this.storageCanFit(r))}
+ start(b,silent=false){let p=this.normalize(b),r=this.recipe(b);if(p.active||!this.canStart(b))return false;if(!this.game.resources.spend(r.input))return false;p.active=true;p.progress=0;if(!silent)this.game.bus.emit("production:changed",b);return true}
+ recordOutput(r,stored){if(r.output.flour)this.game.stats.flourProduced=(this.game.stats.flourProduced||0)+(stored.flour||0);if(r.output.bread)this.game.stats.breadProduced=(this.game.stats.breadProduced||0)+(stored.bread||0)}
+ complete(b,silent=false){let p=this.normalize(b),r=this.recipe(b);if(!r)return{};let stored=this.game.resources.add(r.output);p.active=false;p.progress=0;this.recordOutput(r,stored);if(!silent){this.game.xp.add(r.xp||0);this.game.effects.float(b.x,b.y,Object.entries(stored).map(([k,v])=>"+"+v+" "+(Settlement.ResourceDefs[k]?.icon||k)).join(" "));this.game.bus.emit("production:changed",b)}return stored}
+ update(dt){for(let b of this.buildings()){let p=this.normalize(b),r=this.recipe(b);if(!p.active){this.start(b);continue}p.progress+=dt/r.duration;if(p.progress>=1){this.complete(b);this.start(b)}}}
+ simulateOffline(seconds){
+  let total={};
+  for(let b of this.buildings()){
+   let p=this.normalize(b),r=this.recipe(b),left=seconds;
+   if(p.active){
+    let need=(1-p.progress)*r.duration;
+    if(left<need){p.progress+=left/r.duration;continue}
+    left-=need;let got=this.complete(b,true);for(let[k,v]of Object.entries(got))total[k]=(total[k]||0)+v;
+   }
+   let timeCycles=Math.floor(left/r.duration);if(timeCycles<=0)continue;
+   let inputCycles=Infinity;
+   for(let[k,v]of Object.entries(r.input))inputCycles=Math.min(inputCycles,Math.floor((this.game.resources.v[k]||0)/v));
+   let inputStored=Object.entries(r.input).filter(([k])=>this.game.resources.isStoredResource(k)).reduce((a,[,v])=>a+v,0);
+   let outputStored=Object.entries(r.output).filter(([k])=>this.game.resources.isStoredResource(k)).reduce((a,[,v])=>a+v,0);
+   let net=Math.max(0,outputStored-inputStored),storageCycles=net>0?Math.floor(this.game.resources.remainingCapacity()/net):Infinity;
+   let cycles=Math.max(0,Math.min(timeCycles,inputCycles,storageCycles));
+   if(!Number.isFinite(cycles)||cycles<=0)continue;
+   let inputs={},outputs={};for(let[k,v]of Object.entries(r.input))inputs[k]=v*cycles;for(let[k,v]of Object.entries(r.output))outputs[k]=v*cycles;
+   if(!this.game.resources.spend(inputs))continue;let stored=this.game.resources.add(outputs);this.recordOutput(r,stored);for(let[k,v]of Object.entries(stored))total[k]=(total[k]||0)+v;
+  }
+  return total;
+ }
+};
