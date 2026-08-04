@@ -11,5 +11,7 @@ Settlement.BuildingDefs={
  wall:{id:"wall",name:"Palisade Wall",category:"Military",icon:"🪵",footprint:[1,1],cost:{wood:6},buildTime:1.2,wall:true,xpReward:2},
  gate:{id:"gate",name:"Wooden Gate",category:"Military",icon:"🚪",footprint:[1,1],cost:{wood:20,stone:4,gold:10},buildTime:3,gate:true,wall:true,xpReward:8},
  training:{id:"training",name:"Training Yard",category:"Military",icon:"⚔️",footprint:[2,2],cost:{wood:90,stone:30,gold:140},buildTime:14,workers:1,xpReward:70,requiredTownLevel:2},
- road:{id:"road",name:"Dirt Path",category:"Roads",icon:"🛤️",footprint:[1,1],cost:{gold:1},buildTime:.2,road:true,xpReward:0,requiredTownLevel:2}
+ road:{id:"road",name:"Dirt Path",category:"Roads",icon:"🛤️",footprint:[1,1],cost:{gold:1},buildTime:.2,road:true,xpReward:0,requiredTownLevel:2},
+ mill:{id:"mill",name:"Mill",category:"Production",icon:"⚙️",footprint:[2,2],cost:{wood:95,stone:45,gold:150},buildTime:16,workers:1,recipe:"millFlour",xpReward:75,requiredTownLevel:3},
+ bakery:{id:"bakery",name:"Bakery",category:"Production",icon:"🥖",footprint:[2,2],cost:{wood:110,stone:55,gold:190},buildTime:18,workers:1,recipe:"bakeBread",xpReward:90,requiredTownLevel:4}
 };
