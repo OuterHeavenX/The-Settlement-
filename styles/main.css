@@ -6,6 +6,11 @@ body{touch-action:none;overscroll-behavior:none}
 #ui-root{position:absolute;inset:0;pointer-events:none;user-select:none}
 button{font:inherit}
 .medieval-panel{background:linear-gradient(#ead8ae,#c7a66e);border:3px solid #422b18;box-shadow:0 8px 24px #0007,inset 0 0 0 2px #f4e7c7;border-radius:12px}
-.wood-button{pointer-events:auto;background:linear-gradient(#885a31,#513119);color:#fff2cd;border:2px solid #2d1a0e;border-radius:10px;box-shadow:inset 0 2px #b17a45,0 4px #29170c;padding:10px 14px;font-weight:700;text-shadow:0 1px 1px #000}
-.wood-button:active{transform:translateY(2px);box-shadow:inset 0 2px #b17a45,0 2px #29170c}
+.wood-button{pointer-events:auto;background:linear-gradient(#885a31,#513119);color:#fff2cd;border:2px solid #2d1a0e;border-radius:10px;box-shadow:inset 0 2px #b17a45,0 4px #29170c;padding:10px 14px;font-weight:700;text-shadow:0 1px 1px #000;transition:transform .08s ease,filter .12s ease,box-shadow .08s ease}
+.wood-button:hover{filter:brightness(1.07)}
+.wood-button:active,.navbtn:active,.crop-choice:active{transform:translateY(2px) scale(.98);box-shadow:inset 0 2px #b17a45,0 2px #29170c}
+.juice-celebration{position:absolute;z-index:200;pointer-events:none;left:50%;top:18%;transform:translate(-50%,-12px) scale(.94);opacity:0;min-width:260px;max-width:min(86vw,520px);padding:13px 20px;text-align:center;color:#3b2818;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#f3e2b9,#caa66b);border:3px solid #5b3a1f;border-radius:14px;box-shadow:0 12px 32px #0008,inset 0 0 0 2px #fff5d0;transition:opacity .28s ease,transform .28s cubic-bezier(.2,.8,.2,1)}
+.juice-celebration.show{opacity:1;transform:translate(-50%,0) scale(1)}
+.juice-seal{font-size:25px;margin-bottom:3px;filter:drop-shadow(0 2px 1px #fff8)}
 .hidden{display:none!important}
+@media(prefers-reduced-motion:reduce){.wood-button,.juice-celebration{transition:none!important}.juice-celebration{transform:translate(-50%,0)}}
