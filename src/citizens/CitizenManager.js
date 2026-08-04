@@ -2,9 +2,30 @@ Settlement.CitizenManager=class{
  constructor(game){this.game=game;this.list=[];this.names=["Mara","Edwin","Tomas","Elena","Rowan","Bea","Alden","Nora","Giles","Lina","Hugh","Mira","Cedric","Anya","Bram","Iris","Owen","Talia"];this.next=1;this.seed(2)}
  seed(n){while(this.list.length<n)this.add()}
  pickClaimedRect(){let rects=this.game?.expansion?.claimedRects||[];if(!rects.length){let C=Settlement.Config;return{x:C.START_X,y:C.START_Y,w:C.START_W,h:C.START_H}}let total=rects.reduce((n,r)=>n+r.w*r.h,0),roll=Math.random()*total;for(const r of rects){roll-=r.w*r.h;if(roll<=0)return r}return rects[rects.length-1]}
- add(opts={}){let r=this.pickClaimedRect(),T=Settlement.Config.TILE,id=this.next++,x=opts.x??(r.x+1+Math.random()*Math.max(1,r.w-2))*T,y=opts.y??(r.y+1+Math.random()*Math.max(1,r.h-2))*T,c={id,name:this.names[(id*7)%this.names.length],age:"Adult",home:null,job:"Unassigned",workplace:null,skill:1,morale:80,health:100,x,y,tx:0,ty:0,speed:20+Math.random()*8,state:opts.state||"WANDERING"};this.list.push(c);this.game?.bus?.emit("citizens:changed");return c}
- capacity(){return this.game.housing?this.game.housing.totalCapacity():this.game.buildings.list.filter(b=>b.complete).reduce((n,b)=>n+(Settlement.BuildingDefs[b.type].populationCapacity||0),0)}
+ add(opts={}){let r=this.pickClaimedRect(),T=Settlement.Config.TILE,id=this.next++,x=opts.x??(r.x+1+Math.random()*Math.max(1,r.w-2))*T,y=opts.y??(r.y+1+Math.random()*Math.max(1,r.h-2))*T,c={id,name:this.names[(id*7)%this.names.length],age:"Adult",home:null,job:"Unassigned",workplace:null,skill:1,morale:80,health:100,x,y,tx:0,ty:0,speed:20+Math.random()*8,state:opts.state||"WANDERING",path:[],pathIndex:0,nextDecision:0};this.list.push(c);this.game?.bus?.emit("citizens:changed");return c}
+ capacity(){return this.game.housing?this.game.housing.totalCapacity():0}
  syncPopulation(){this.game.housing?.reconcile()}
- assign(building){let def=Settlement.BuildingDefs[building.type];if(!def?.workers||((building.workers||0)>=def.workers))return false;let c=this.list.find(c=>c.job==="Unassigned");if(!c)return false;let jobs={archery:"Archer",lumber:"Lumberjack",training:"Trainee",mill:"Miller",bakery:"Baker"};c.job=jobs[building.type]||"Worker";c.workplace=building.id;building.workers=(building.workers||0)+1;this.game.bus.emit("citizens:changed");return true}
- update(dt){let T=Settlement.Config.TILE;for(let c of this.list){if(c.state==="SLEEPING")continue;if(!c.tx||Math.hypot(c.tx-c.x,c.ty-c.y)<8){if(c.state==="ARRIVING"&&c.home){c.state="HOME";continue}let wp=c.workplace&&this.game.buildings.byId(c.workplace);if(wp&&Math.random()<.7){c.tx=(wp.x+wp.w/2)*T;c.ty=(wp.y+wp.h/2)*T;c.state="WORKING"}else{let r=this.pickClaimedRect();c.tx=(r.x+.5+Math.random()*Math.max(.5,r.w-1))*T;c.ty=(r.y+.5+Math.random()*Math.max(.5,r.h-1))*T;c.state="WANDERING"}}let dx=c.tx-c.x,dy=c.ty-c.y,d=Math.hypot(dx,dy)||1;c.x+=dx/d*c.speed*dt;c.y+=dy/d*c.speed*dt}}
+ assign(building){let def=Settlement.BuildingDefs[building.type];if(!def?.workers||((building.workers||0)>=def.workers))return false;let c=this.list.find(c=>c.job==="Unassigned");if(!c)return false;let jobs={archery:"Archer",lumber:"Lumberjack",training:"Trainee",mill:"Miller",bakery:"Baker"};c.job=jobs[building.type]||"Worker";c.workplace=building.id;building.workers=(building.workers||0)+1;c.path=[];this.game.bus.emit("citizens:changed");return true}
+ hour(){return(this.game.clock.t/Settlement.Config.DAY_SECONDS)*24}
+ tile(c){return{x:Math.floor(c.x/Settlement.Config.TILE),y:Math.floor(c.y/Settlement.Config.TILE)}}
+ setDestination(c,target,state){if(!target)return false;let path=this.game.pathfinding.find(this.tile(c),target);if(!path.length){c.tx=(target.x+.5)*Settlement.Config.TILE;c.ty=(target.y+.5)*Settlement.Config.TILE;c.path=[];c.state=state;return false}c.path=path;c.pathIndex=Math.min(1,path.length-1);c.state=state;return true}
+ homeTarget(c){let h=c.home&&this.game.buildings.byId(c.home);return this.game.roads.entrance(h)}
+ workTarget(c){let b=c.workplace&&this.game.buildings.byId(c.workplace);return this.game.roads.entrance(b)}
+ socialTarget(){let r=this.game.roads.nearestRoadTarget();if(r)return r;let a=this.pickClaimedRect();return{x:Math.floor(a.x+1+Math.random()*Math.max(1,a.w-2)),y:Math.floor(a.y+1+Math.random()*Math.max(1,a.h-2))}}
+ decide(c){
+  let h=this.hour(),home=this.homeTarget(c),work=this.workTarget(c);
+  if(c.state==="ARRIVING"){if(home)this.setDestination(c,home,"TRAVEL_HOME");return}
+  if(h<6||h>=22){if(home&&c.state!=="SLEEPING"&&c.state!=="TRAVEL_HOME")this.setDestination(c,home,"TRAVEL_HOME");else if(!home)c.state="WANDERING";return}
+  if(h>=6&&h<8){if(work&&c.state!=="TRAVEL_TO_WORK"&&c.state!=="WORKING")this.setDestination(c,work,"TRAVEL_TO_WORK");else if(!work&&c.state!=="WANDERING")this.setDestination(c,this.socialTarget(),"WANDERING");return}
+  if(h>=8&&h<17){if(work){if(c.state!=="WORKING"&&c.state!=="TRAVEL_TO_WORK")this.setDestination(c,work,"TRAVEL_TO_WORK")}else if(c.state!=="WANDERING"&&c.state!=="SOCIALIZING")this.setDestination(c,this.socialTarget(),"WANDERING");return}
+  if(h>=17&&h<21){if(c.state!=="SOCIALIZING")this.setDestination(c,this.socialTarget(),"SOCIALIZING");return}
+  if(home&&c.state!=="TRAVEL_HOME"&&c.state!=="HOME")this.setDestination(c,home,"TRAVEL_HOME");
+ }
+ move(c,dt){
+  let T=Settlement.Config.TILE;
+  if(c.path?.length&&c.pathIndex<c.path.length){let p=c.path[c.pathIndex],tx=(p.x+.5)*T,ty=(p.y+.5)*T,dx=tx-c.x,dy=ty-c.y,d=Math.hypot(dx,dy);if(d<5){c.pathIndex++;if(c.pathIndex>=c.path.length){c.path=[];if(c.state==="TRAVEL_TO_WORK")c.state="WORKING";else if(c.state==="TRAVEL_HOME"){c.state=this.hour()<6||this.hour()>=22?"SLEEPING":"HOME"}return}}else{let mult=this.game.roads.isRoad(Math.floor(c.x/T),Math.floor(c.y/T))?this.game.roads.speedMultiplier:1;c.x+=dx/d*c.speed*mult*dt;c.y+=dy/d*c.speed*mult*dt;return}}
+  if(c.state==="WORKING"||c.state==="HOME"||c.state==="SLEEPING")return;
+  if(c.tx||c.ty){let dx=c.tx-c.x,dy=c.ty-c.y,d=Math.hypot(dx,dy);if(d>5){c.x+=dx/d*c.speed*dt;c.y+=dy/d*c.speed*dt}else{c.tx=0;c.ty=0}}
+ }
+ update(dt){for(let c of this.list){c.nextDecision=(c.nextDecision||0)-dt;if(c.nextDecision<=0){c.nextDecision=1.2+Math.random()*.8;this.decide(c)}this.move(c,dt)}}
 };
