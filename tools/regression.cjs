@@ -198,6 +198,69 @@ async function run() {
   check('MASON MANUAL 4->2 batch', mason.start - mason.afterOrder === 4 && mason.cut === 2, `-4 stone +${mason.cut} cut stone`);
   check('MASON MANUAL stops after batch', !mason.activeAfter && mason.afterWait === mason.afterBatch, `steady at ${mason.afterWait}`);
 
+  // ---------- phase 1 systems ----------
+  const q = await G(() => {
+    const g = window.game, out = {};
+    for (const m of ['LOW', 'MEDIUM', 'HIGH', 'ULTRA']) { g.quality.setMode(m); out[m] = { dpr: g.renderer.dpr, particles: g.juice.maxParticles }; }
+    g.quality.setMode('AUTO'); out.auto = g.quality.tier; out.defs = Object.keys(Settlement.BuildingDefs).length;
+    return out;
+  });
+  check('QUALITY TIERS', q.LOW.dpr < q.HIGH.dpr && q.LOW.particles < q.ULTRA.particles && q.defs === 14,
+    `dpr ${q.LOW.dpr}->${q.HIGH.dpr}, particles ${q.LOW.particles}->${q.ULTRA.particles}, auto=${q.auto}, defs=${q.defs}`);
+
+  const hall = await G(() => {
+    const g = window.game;
+    const h = g.buildings.create('mainHall', 143, 143); h.complete = true; h.progress = 1;
+    const cap0 = g.resources.capacity();
+    const dup = g.placement.validate('mainHall', 150, 150).ok;
+    const panel = g.ui.mainHallPanel(h);
+    g.resources.v = { gold: 9e4, wood: 9e4, stone: 9e4, food: 9e3, wheat: 900, flour: 900, bread: 900, clay: 9e3, cutStone: 9e3 };
+    const before = g.resources.v.gold;
+    g.xp.level = 6; g.upgrades.startUpgrade(h);
+    for (let i = 0; i < 300; i++) g.upgrades.update(0.5);
+    return { footprint: h.w + 'x' + h.h, dup, panelLen: panel.length, hasLocked: /Locked/.test(panel),
+             level: h.level, spent: before - g.resources.v.gold, capGain: g.resources.capacity() - cap0 };
+  });
+  check('MAIN HALL', hall.footprint === '4x4' && !hall.dup && hall.panelLen > 400 && hall.hasLocked,
+    `${hall.footprint}, duplicate refused=${!hall.dup}, panel ${hall.panelLen} chars, locked tabs present`);
+  check('BUILDING UPGRADE FRAMEWORK', hall.level === 2 && hall.spent === 1400,
+    `Main Hall level 1 -> ${hall.level}, spent ${hall.spent} gold, storage +${hall.capGain}`);
+
+  const archer = await G(() => {
+    const g = window.game, t = g.buildings.list.find(b => b.type === 'archery');
+    if (!t) return null;
+    g.camera.x = g.camera.tx = (t.x + .5) * 64; g.camera.y = g.camera.ty = (t.y + .5) * 64;
+    g.camera.zoom = g.camera.tzoom = 1.2;
+    t.workers = 0; g.renderer.draw(); const off = document.querySelector('#game-canvas').toDataURL().length;
+    t.workers = 1; g.renderer.draw(); const on = document.querySelector('#game-canvas').toDataURL().length;
+    return { off, on };
+  });
+  check('ARCHER', !!archer && archer.off !== archer.on, archer ? `unmanned ${archer.off} vs manned ${archer.on} bytes` : 'no tower');
+
+  const expo = await G(() => {
+    const g = window.game, ex = g.expansion, out = { start: ex.claimed, claims: [] };
+    const mk = (t, x, y) => { const b = g.buildings.create(t, x, y); b.complete = true; b.progress = 1; return b; };
+    for (let n = 0; n < 2; n++) {
+      const reg = ex.activeRegion(); if (!reg) break;
+      g.xp.level = Math.max(g.xp.level, reg.minLevel);
+      while (g.citizens.list.length < reg.minPopulation) g.citizens.add();
+      g.resources.v = { gold: 9e5, wood: 9e5, stone: 9e5, food: 9e4, wheat: 900, flour: 900, bread: 900, clay: 9e4, cutStone: 9e4 };
+      mk('archery', reg.rect.x - 1, reg.rect.y);
+      let gate = null;
+      for (const c of ex.perimeterCells()) { if (g.grid.isOccupied(c.x, c.y)) continue; const b = mk(gate ? 'wall' : 'gate', c.x, c.y); if (!gate) gate = b; }
+      if (gate) for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const x = gate.x+dx, y = gate.y+dy;
+        if (g.expansion.isClaimed(x,y) && !g.grid.isOccupied(x,y)) { mk('road', x, y); break; } }
+      out.claims.push({ name: reg.name, ok: ex.tryClaim() });
+    }
+    out.end = ex.claimed; out.total = ex.regions.length;
+    out.buildable = ex.canBuild('cottage', ex.claimedRects[ex.claimedRects.length-1].x+1, ex.claimedRects[ex.claimedRects.length-1].y+1, 2, 2);
+    return out;
+  });
+  check('TERRITORY EXPANSION', expo.claims[0] && expo.claims[0].ok && expo.buildable,
+    `${expo.claims[0] ? expo.claims[0].name : '?'} claimed, new land buildable`);
+  check('SECOND EXPANSION', expo.claims[1] && expo.claims[1].ok && expo.end === expo.start + 2,
+    `${expo.claims[1] ? expo.claims[1].name : '?'} claimed, ${expo.end}/${expo.total} frontiers held`);
+
   // ---------- time ----------
   check('DAY/NIGHT', await G(() => { const g = window.game, d0 = g.clock.day; g.clock.update(240); return g.clock.day > d0 && !!g.clock.season; }));
   check('SEASONS', await G(() => { const g = window.game, seen = new Set(); for (let i = 0; i < 40; i++) { g.clock.update(240); seen.add(g.clock.season); } return seen.size >= 2; }));
