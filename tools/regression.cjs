@@ -486,6 +486,20 @@ async function run() {
   check('CONSOLE', errors.length === 0, errors.length ? [...new Set(errors)].slice(0, 4).join(' | ') : 'clean');
   check('GAME LOOP ALIVE', await alive());
 
+  // A first-time visitor must get the finished, readable renderer.
+  const ctxDef = await browser.newContext(PHONE);
+  const pDef = await ctxDef.newPage();
+  await pDef.goto(BASE_URL, { waitUntil: 'load' });
+  await pDef.waitForTimeout(2200);
+  const def = await pDef.evaluate(() => ({
+    threeD: Settlement.renderer3dEnabled, supported: Settlement.renderer3dSupported,
+    twoDVisible: !document.querySelector('#game-canvas').classList.contains('hidden'),
+    noThreeCanvas: !document.querySelector('#game-canvas-3d')
+  }));
+  check('DEFAULT VIEW IS 2D', def.threeD === false && def.twoDVisible && def.noThreeCanvas,
+    `fresh visitor gets 2D even though WebGL is ${def.supported ? 'available' : 'absent'}`);
+  await ctxDef.close();
+
   // ---------- 3D presentation layer ----------
   const ctx3 = await browser.newContext(PHONE);
   await ctx3.addInitScript(() => {
@@ -498,7 +512,7 @@ async function run() {
   await p3.goto(BASE_URL, { waitUntil: 'load' });
   await p3.waitForTimeout(2600);
   const on = await p3.evaluate(() => ({ supported: Settlement.renderer3dSupported, enabled: Settlement.renderer3dEnabled, world: !!window.game.world3d }));
-  check('3D RENDERER STARTS', on.supported && on.enabled && on.world, `supported=${on.supported} active=${on.enabled}`);
+  check('3D RENDERER STARTS (opt-in)', on.supported && on.enabled && on.world, `supported=${on.supported} active=${on.enabled}`);
 
   if (on.enabled) {
     await p3.click('#start'); await p3.waitForTimeout(900);

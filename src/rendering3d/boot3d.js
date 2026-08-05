@@ -7,9 +7,12 @@
  */
 const KEY = "theSettlement.settings.v1";
 
+/* Opt-in. The 3D layer is an experiment and is NOT yet as readable as the 2D
+   renderer, so the working presentation stays the default until it earns the
+   swap. */
 function pref() {
-  try { const s = JSON.parse(localStorage.getItem(KEY) || "{}"); return s.renderer3d !== false; }
-  catch (e) { return true; }
+  try { const s = JSON.parse(localStorage.getItem(KEY) || "{}"); return s.renderer3d === true; }
+  catch (e) { return false; }
 }
 function setPref(on) {
   try {
@@ -43,10 +46,7 @@ async function boot() {
   Settlement.renderer3dEnabled = false;
   Settlement.setRenderer3D = mode => { setPref(mode); location.reload(); };
 
-  if (!pref() || !Settlement.renderer3dSupported) {
-    console.info("The Settlement: 2D renderer (3D " + (Settlement.renderer3dSupported ? "disabled by preference" : "unsupported") + ")");
-    return;
-  }
+  if (!pref() || !Settlement.renderer3dSupported) return;
 
   let World3D;
   try { ({ World3D } = await import("./World3D.js")); }
