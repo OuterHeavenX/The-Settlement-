@@ -48,7 +48,7 @@
    o.damage=r(d.damage*(1+.28*(lv-1)));
    o.range=+(d.range*(1+.06*(lv-1))).toFixed(2);
    o.fireRate=+(d.fireRate*(1+.07*(lv-1))).toFixed(3);
-   o.claim=lv>=15?11:lv>=10?9:lv>=5?7:5;                    // square claim, odd so the tower centres
+   o.claim=lv>=15?13:lv>=10?11:lv>=5?9:7;                   // square claim, odd so the tower centres
   }
   return o;
  };

@@ -270,11 +270,11 @@ async function run() {
     out.reqs = ex.requirements().length;
     return out;
   });
-  check('TERRITORY EXPANSION', expo.canPlace && expo.previewRect.w === 5 && expo.previewRect.h === 5 && expo.afterFirst > expo.claimedBeforeComplete && expo.buildableNow,
-    `5x5 preview (${expo.previewFresh} new tiles), ${expo.before} -> ${expo.afterFirst} tiles on completion, new land buildable`);
+  check('TERRITORY EXPANSION', expo.canPlace && expo.previewRect.w === 7 && expo.previewRect.h === 7 && expo.afterFirst > expo.claimedBeforeComplete && expo.buildableNow,
+    `${expo.previewRect.w}x${expo.previewRect.h} preview (${expo.previewFresh} new tiles), ${expo.before} -> ${expo.afterFirst} tiles on completion, new land buildable`);
   check('SECOND EXPANSION', expo.afterSecond > expo.afterFirst,
     `${expo.afterFirst} -> ${expo.afterSecond} tiles`);
-  check('TOWER CLAIM MILESTONES', expo.sizes.join(',') === '5,7,9,11' && expo.afterMilestone > expo.afterSecond,
+  check('TOWER CLAIM MILESTONES', expo.sizes.join(',') === '7,9,11,13' && expo.afterMilestone > expo.afterSecond,
     `sizes ${expo.sizes.join('/')} at levels 1/5/10/15, milestone widened ${expo.afterSecond} -> ${expo.afterMilestone}`);
   check('NO EXPANSION CHECKLIST', expo.reqs === 0, 'walls, gates, population, roads and payments no longer gate territory');
   check('TERRITORY PERMANENT', expo.afterDemolish === expo.afterMilestone,
@@ -297,12 +297,17 @@ async function run() {
   check('TERRITORY IS VISIBLE', vis.diff > 45, `claimed vs wilderness differ by ${vis.diff}/765 RGB`);
 
   const msg = await G(() => {
-    const g = window.game, r0 = g.expansion.claimedRects[0], o = {};
-    g.placement.start('cottage'); g.placement.setPreviewTile(r0.x + r0.w + 6, r0.y); o.cottage = g.placement.lastValidation.reason; g.placement.cancel();
-    g.placement.start('archery'); g.placement.setPreviewTile(r0.x + r0.w + 8, r0.y); o.tower = g.placement.lastValidation.reason; g.placement.cancel();
+    const g = window.game, o = {};
+    // pick ground far beyond every claim so the probe cannot drift into owned land
+    let maxX = 0, maxY = 0;
+    for (const r of g.expansion.claimedRects) { maxX = Math.max(maxX, r.x + r.w); maxY = Math.max(maxY, r.y + r.h); }
+    const fx = maxX + 12, fy = maxY + 12;
+    o.farClaimed = g.expansion.isClaimed(fx, fy);
+    g.placement.start('cottage'); g.placement.setPreviewTile(fx, fy); o.cottage = g.placement.lastValidation.reason; g.placement.cancel();
+    g.placement.start('archery'); g.placement.setPreviewTile(fx, fy); o.tower = g.placement.lastValidation.reason; g.placement.cancel();
     return o;
   });
-  check('REFUSAL EXPLAINS ITSELF', /ARCHERY TOWER/.test(msg.cottage) && /BORDER/.test(msg.tower),
+  check('REFUSAL EXPLAINS ITSELF', !msg.farClaimed && /ARCHERY TOWER/.test(msg.cottage) && /BORDER/.test(msg.tower),
     `"${msg.cottage}" / "${msg.tower}"`);
 
   // ---------- levels, move, delete ----------

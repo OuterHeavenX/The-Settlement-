@@ -4,8 +4,8 @@
  * when it finishes construction. No walls, gates, population, roads, hidden
  * checklists or expansion payments. Walls and gates remain purely defensive.
  *
- * The claimed square grows at tower level milestones (1 -> 5x5, 5 -> 7x7,
- * 10 -> 9x9, 15 -> 11x11), read from the tower's level table so the preview,
+ * The claimed square grows at tower level milestones (1 -> 7x7, 5 -> 9x9,
+ * 10 -> 11x11, 15 -> 13x13), read from the tower's level table so the preview,
  * the inspector and the actual claim can never disagree.
  *
  * Claimed land is permanent. Moving or demolishing a tower never revokes
@@ -29,7 +29,7 @@ Settlement.ExpansionManager=class{
  claimSize(level=1){
   let d=Settlement.BuildingDefs.archery,
       lv=Array.isArray(d?.levels)?d.levels.find(x=>x.level===(level||1)):null;
-  return (lv&&lv.claim)||5;
+  return (lv&&lv.claim)||7;
  }
  /* Grid-aligned square centred on the tower, clamped inside the world. */
  claimRectFor(type,x,y,level=1){
@@ -41,7 +41,16 @@ Settlement.ExpansionManager=class{
  }
  rectForBuilding(b){return b?this.claimRectFor(b.type,b.x,b.y,b.level||1):null}
 
- isClaimed(x,y){return this.claimedRects.some(r=>x>=r.x&&y>=r.y&&x<r.x+r.w&&y<r.y+r.h)}
+ /* Tile set rebuilt whenever the rect list changes, including after a save
+    load which assigns claimedRects directly. Keeps isClaimed O(1) so the
+    territory border can be drawn per tile every frame. */
+ claimedTiles(){
+  if(this._set&&this._setN===this.claimedRects.length)return this._set;
+  let s=new Set();
+  for(const r of this.claimedRects)for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)s.add(x+","+y);
+  this._set=s;this._setN=this.claimedRects.length;return s;
+ }
+ isClaimed(x,y){return this.claimedTiles().has(x+","+y)}
  /* Tiles inside the square that are not owned yet - what the preview highlights. */
  unclaimedCells(rect){let out=[];if(!rect)return out;for(let y=rect.y;y<rect.y+rect.h;y++)for(let x=rect.x;x<rect.x+rect.w;x++)if(!this.isClaimed(x,y))out.push({x,y});return out}
 
@@ -83,5 +92,5 @@ Settlement.ExpansionManager=class{
  requirements(){return[]}
  tryClaim(){return false}
  progressText(){return "Build an Archery Tower near your border to claim more land."}
- totalTiles(){return this.claimedRects.reduce((n,r)=>n+r.w*r.h,0)}
+ totalTiles(){return this.claimedTiles().size}
 };

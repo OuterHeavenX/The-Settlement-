@@ -35,7 +35,30 @@ Settlement.MedievalWorldArt=class{
    c.fillStyle="#141c1246";c.fillRect(x*T,y*T,T,T);   // unclaimed wilderness reads clearly darker
   }
  }
- claimedBounds(){let c=this.ctx,T=this.T;c.save();c.lineWidth=3;c.strokeStyle="#f0dda8cc";for(let r of this.game.expansion.claimedRects||[]){c.strokeRect(r.x*T+3,r.y*T+3,r.w*T-6,r.h*T-6);let pts=[[r.x*T+7,r.y*T+7],[(r.x+r.w)*T-7,r.y*T+7],[r.x*T+7,(r.y+r.h)*T-7],[(r.x+r.w)*T-7,(r.y+r.h)*T-7]];c.fillStyle="#7a5b35";for(let [px,py] of pts){c.fillRect(px-2,py-6,4,12);c.fillStyle="#d8c58a";c.fillRect(px-1,py-7,2,4);c.fillStyle="#7a5b35"}}c.restore()}
+  /* The actual outline of everything you own, traced tile by tile so that
+    overlapping claims read as one settlement rather than a pile of boxes.
+    This is the line that answers "where am I allowed to build?", so it is
+    drawn boldly, and brighter still while a structure is being placed. */
+ claimedBounds(){
+  let c=this.ctx,T=this.T,ex=this.game.expansion,cam=this.game.camera,r=this.r,C=Settlement.Config,
+      W=r.c.width,H=r.c.height,dpr=r.dpr||1,
+      halfW=W/(2*cam.zoom*dpr)+T,halfH=H/(2*cam.zoom*dpr)+T,
+      minx=Math.max(0,Math.floor((cam.x-halfW)/T)),maxx=Math.min(C.WORLD_W,Math.ceil((cam.x+halfW)/T)),
+      miny=Math.max(0,Math.floor((cam.y-halfH)/T)),maxy=Math.min(C.WORLD_H,Math.ceil((cam.y+halfH)/T)),
+      placing=!!this.game.placement?.type;
+  c.save();
+  c.beginPath();
+  for(let y=miny;y<maxy;y++)for(let x=minx;x<maxx;x++){
+   if(!ex.isClaimed(x,y))continue;
+   if(!ex.isClaimed(x,y-1)){c.moveTo(x*T,y*T);c.lineTo(x*T+T,y*T)}
+   if(!ex.isClaimed(x,y+1)){c.moveTo(x*T,y*T+T);c.lineTo(x*T+T,y*T+T)}
+   if(!ex.isClaimed(x-1,y)){c.moveTo(x*T,y*T);c.lineTo(x*T,y*T+T)}
+   if(!ex.isClaimed(x+1,y)){c.moveTo(x*T+T,y*T);c.lineTo(x*T+T,y*T+T)}
+  }
+  c.strokeStyle="#2a1e10aa";c.lineWidth=7;c.stroke();          // dark backing so it reads on grass
+  c.strokeStyle=placing?"#ffe9a8":"#f2dda6";c.lineWidth=3;c.stroke();
+  c.restore();
+ }
  /* Frontier marker: surveyor's stakes and a banner rather than a debug box.
     Turns green once every claim requirement is satisfied. */
  /* Newly claimed squares flash in, grid-aligned, then settle. */
