@@ -40,3 +40,27 @@
 .manage-row{display:flex;gap:8px;margin:6px 0 4px;flex-wrap:wrap}
 .manage-row .wood-button{flex:1 1 46%;min-width:120px}
 .wood-button.danger{background:linear-gradient(#96412f,#5e2418);box-shadow:inset 0 2px #c46a4a,0 4px #2c1009}
+
+/* collapsible quest */
+#questbox.collapsed{padding:0;background:none;border:0;box-shadow:none}
+.quest-bar{pointer-events:auto;display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px 11px;border:2px solid #46301a;border-radius:11px;background:linear-gradient(#e6d2a6,#c9a86e);color:#31220f;font:inherit;font-size:14px}
+#questbox.collapsed .quest-bar{background:linear-gradient(#2b2117,#1b140d);color:#f0dda6;border-color:#6b4c28}
+.quest-bar b{flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quest-bar small{flex:1 1 auto;font-size:11px;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.quest-bar .chev{margin-left:auto;font-size:13px;opacity:.75}
+/* collapsible bottom navigation */
+#bottomnav.nav-collapsed{display:none!important}
+#nav-handle{position:absolute;right:max(10px,env(safe-area-inset-right));bottom:max(10px,env(safe-area-inset-bottom));z-index:40;width:52px;height:52px;border-radius:50%;border:2px solid #6b4c28;background:linear-gradient(#3a2a1a,#1d150d);color:#f0dda6;font-size:22px;pointer-events:auto;box-shadow:0 5px 16px #0008}
+.nav-hide{font-size:10px!important;opacity:.85}
+/* happiness / beauty meters */
+.band{font-size:11px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:999px;background:#6a482a;color:#ffe9bf;vertical-align:middle}
+.meter-list{display:grid;gap:7px;margin:0 0 11px}
+.meter-row{padding:7px 9px;border:1px solid #8b673b;border-radius:8px;background:#d7bf8f4d}
+.meter-head{display:flex;justify-content:space-between;gap:8px;font-size:12.5px}
+.meter-row i{display:block;height:7px;border-radius:6px;background:#3b2b1d;overflow:hidden;margin:5px 0 3px}
+.meter-row em{display:block;height:100%;background:linear-gradient(90deg,#7a9b4c,#c9a24b)}
+.meter-row small{font-size:10.5px;color:#5b4630}
+
+/* the hide control floats on the bar so it never consumes a nav grid cell */
+#bottomnav{position:absolute}
+.nav-hide{position:absolute;top:-13px;right:10px;z-index:5;width:38px;height:26px;border-radius:9px 9px 0 0;border:1px solid #6b4c28;border-bottom:0;background:linear-gradient(#3a2a1a,#20170f);color:#f0dda6;font-size:13px;line-height:1;pointer-events:auto}

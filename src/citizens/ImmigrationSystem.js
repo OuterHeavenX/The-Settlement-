@@ -1,6 +1,6 @@
 Settlement.ImmigrationSystem=class{
  constructor(game){this.game=game;this.timer=0;this.baseInterval=85;this.arrivals=0}
- interval(){return Math.max(45,this.baseInterval-this.game.xp.level*4)}
+ interval(){let base=Math.max(45,this.baseInterval-this.game.xp.level*4);return base/(this.game.happiness?.immigrationFactor()||1)}
  conditions(){let pop=this.game.citizens.list.length,beds=this.game.housing.openBeds(),food=this.game.resources.v.food||0,housing=beds>0,foodStable=food>=Math.max(24,pop*6),safe=this.game.enemies.list.length===0&&(pop<4||this.game.buildings.count("archery")>0||this.game.expansion.claimed>0);return{housing,food:foodStable,safe,beds,ready:housing&&foodStable&&safe}}
  statusText(){let c=this.conditions();if(!c.housing)return"Paused — no available housing";if(!c.food)return"Paused — food reserves are too low";if(!c.safe)return"Paused — settlement security is insufficient";return"Next settler in "+Math.max(0,Math.ceil(this.interval()-this.timer))+"s"}
  update(dt){let c=this.conditions();if(!c.ready){this.timer=Math.max(0,this.timer-dt*.25);return}this.timer+=dt;if(this.timer>=this.interval()){this.timer=0;this.arrive()}}

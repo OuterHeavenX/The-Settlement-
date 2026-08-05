@@ -224,12 +224,12 @@ async function run() {
     const want = Settlement.BuildingDefs.mainHall.levels.find(l => l.level === 2);
     g.xp.level = want.requiredTownLevel; g.upgrades.startUpgrade(h);
     for (let i = 0; i < 600; i++) g.upgrades.update(0.5);
-    return { footprint: h.w + 'x' + h.h, dup, panelLen: panel.length, hasLocked: /Locked/.test(panel),
+    return { footprint: h.w + 'x' + h.h, dup, panelLen: panel.length, hasCharter: /Happiness/.test(panel) && /Beauty/.test(panel),
              level: h.level, spent: before - g.resources.v.gold, wantGold: want.cost.gold,
              capGain: g.resources.capacity() - cap0, maxLevel: Settlement.BuildingDefs.mainHall.levels.length };
   });
-  check('MAIN HALL', hall.footprint === '4x4' && !hall.dup && hall.panelLen > 400 && hall.hasLocked,
-    `${hall.footprint}, duplicate refused=${!hall.dup}, panel ${hall.panelLen} chars, locked tabs present`);
+  check('MAIN HALL', hall.footprint === '4x4' && !hall.dup && hall.panelLen > 400 && hall.hasCharter,
+    `${hall.footprint}, duplicate refused=${!hall.dup}, panel ${hall.panelLen} chars, Happiness + Beauty present`);
   check('BUILDING UPGRADE FRAMEWORK', hall.level === 2 && hall.spent === hall.wantGold && hall.maxLevel === 15,
     `Main Hall level 1 -> ${hall.level}, spent ${hall.spent}/${hall.wantGold} gold, storage +${hall.capGain}, ${hall.maxLevel} levels`);
 
@@ -392,6 +392,51 @@ async function run() {
   });
   check('DELETE ALL STRUCTURE TYPES', del.allClean,
     Object.entries(del.results).map(([k, v]) => `${k}:${v ? 'ok' : 'FAIL'}`).join(' '));
+
+  // ---------- happiness / beauty / collapsible UI ----------
+  const hb = await G(() => {
+    const g = window.game;
+    g.beauty.dirty = true; g.happiness.compute();
+    const hp = g.happiness.breakdown(), bp = g.beauty.breakdown();
+    return {
+      h: g.happiness.value(), b: g.beauty.value(), hLabel: g.happiness.label(), bLabel: g.beauty.label(),
+      hSum: Math.round(hp.reduce((n, x) => n + x.value, 0)), bSum: Math.round(bp.reduce((n, x) => n + x.value, 0)),
+      hParts: hp.length, bParts: bp.length,
+      allNoted: hp.every(x => x.note) && bp.every(x => x.note),
+      immig: g.happiness.immigrationFactor(), prod: g.happiness.productionFactor(), xp: g.happiness.xpFactor(),
+      saved: JSON.stringify(Settlement.SaveSchema.create(g))
+    };
+  });
+  check('HAPPINESS', hb.h >= 0 && hb.h <= 100 && hb.hParts === 5 && Math.abs(hb.hSum - hb.h) <= 1 && hb.allNoted,
+    `${hb.h}/100 ${hb.hLabel}, 5 contributions summing to ${hb.hSum}, each explained`);
+  check('BEAUTY', hb.b >= 0 && hb.b <= 100 && hb.bParts === 6 && Math.abs(hb.bSum - hb.b) <= 1,
+    `${hb.b}/100 ${hb.bLabel}, 6 sources summing to ${hb.bSum}`);
+  check('HAPPINESS BONUSES RESTRAINED', hb.immig <= 1.15 && hb.prod <= 1.06 && hb.xp <= 1.05 && hb.immig >= 0.85,
+    `settlers x${hb.immig.toFixed(2)}, production x${hb.prod.toFixed(2)}, XP x${hb.xp.toFixed(2)}`);
+  check('HAPPINESS NOT PERSISTED', !/happiness|beauty/i.test(hb.saved), 'derived from world state, no save fields added');
+
+  await G(() => { const g = window.game; const h = g.buildings.list.find(b => b.type === 'mainHall'); if (h) g.ui.inspect(h); });
+  await page.waitForTimeout(220);
+  const charter = await G(() => ({ meters: document.querySelectorAll('#panel .meter-row').length, bands: document.querySelectorAll('#panel .band').length }));
+  check('MAIN HALL SHOWS CHARTER', charter.meters >= 10 && charter.bands === 2, `${charter.meters} explained meters, Happiness + Beauty bands`);
+  await G(() => window.game.ui.closePanels());
+
+  const qExpanded = await G(() => document.querySelector('#questbox').getBoundingClientRect().height | 0);
+  await page.click('#questbox .quest-bar'); await page.waitForTimeout(200);
+  const qCollapsed = await G(() => ({ h: document.querySelector('#questbox').getBoundingClientRect().height | 0, cls: document.querySelector('#questbox').classList.contains('collapsed') }));
+  check('QUEST COLLAPSE', qCollapsed.cls && qCollapsed.h < qExpanded, `${qExpanded}px -> ${qCollapsed.h}px`);
+  await page.click('#questbox .quest-bar'); await page.waitForTimeout(200);
+  check('QUEST EXPAND', await G(() => !document.querySelector('#questbox').classList.contains('collapsed')));
+
+  await page.click('.nav-hide'); await page.waitForTimeout(200);
+  const navHidden = await G(() => ({ nav: document.querySelector('#bottomnav').classList.contains('nav-collapsed'), handle: !document.querySelector('#nav-handle').classList.contains('hidden') }));
+  check('BOTTOM NAV COLLAPSE', navHidden.nav && navHidden.handle, 'nav hidden, handle reachable');
+  await page.click('#nav-handle'); await page.waitForTimeout(200);
+  await page.click('[data-nav="BUILD"]'); await page.waitForTimeout(260);
+  check('BOTTOM NAV EXPAND', (await cards()) > 0, 'BUILD is one tap away after expanding');
+  await page.click('#buildmenu .panel-close').catch(() => { });
+  const navFit = await G(() => { const n = document.querySelector('#bottomnav'), r = n.getBoundingClientRect(); return [...n.querySelectorAll('.navbtn')].every(b => { const q = b.getBoundingClientRect(); return q.bottom <= r.bottom + 1 && q.top >= r.top - 1 && q.right <= r.right + 1; }); });
+  check('NAV GRID INTACT', navFit, 'all 8 destinations fit the bar');
 
   // ---------- time ----------  // ---------- time ----------
   check('DAY/NIGHT', await G(() => { const g = window.game, d0 = g.clock.day; g.clock.update(240); return g.clock.day > d0 && !!g.clock.season; }));
