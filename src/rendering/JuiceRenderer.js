@@ -1,5 +1,48 @@
-(()=>{let base=Settlement.Renderer.prototype.draw;Settlement.Renderer.prototype.draw=function(){base.call(this);let g=this.game,ctx=this.ctx,cam=g.camera,W=this.c.width,H=this.c.height,j=g.juice;if(!j)return;ctx.save();ctx.translate(W/2,H/2);ctx.scale(cam.zoom*this.dpr,cam.zoom*this.dpr);ctx.translate(-cam.x,-cam.y);this.drawLivingBuildings(ctx,j);this.drawCitizenProps(ctx,j);this.drawJuiceParticles(ctx,j);this.drawAmbient(ctx,j);this.drawBubbles(ctx,j);ctx.restore();this.drawAtmosphere(ctx,g)};
-Settlement.Renderer.prototype.drawLivingBuildings=function(ctx,j){let t=j.time,hour=this.game.clock.t/Settlement.Config.DAY_SECONDS*24;for(let b of this.game.buildings.list){if(!b.complete)continue;let x=b.x*64,y=b.y*64,w=b.w*64,h=b.h*64,d=Settlement.BuildingDefs[b.type],active=d?.recipe?this.game.production?.normalize(b)?.active:d?.production?(b.workers||0)>0:true;if(b.type==="farm"){let fp=this.game.farms.normalize(b);if(fp.crop&&fp.state!=="empty"){ctx.save();ctx.globalAlpha=.14;ctx.fillStyle="#e3ed8c";for(let i=0;i<8;i++){let sway=Math.sin(t*2+i)*2;ctx.beginPath();ctx.arc(x+14+(i%4)*28+sway,y+25+Math.floor(i/4)*48,4,0,7);ctx.fill()}ctx.restore()}}if(b.type==="bakery"&&active){ctx.save();ctx.globalAlpha=.13+.07*Math.sin(t*5);ctx.fillStyle="#ffbd55";ctx.beginPath();ctx.arc(x+w*.66,y+h*.63,15,0,7);ctx.fill();ctx.restore()}if(b.type==="quarry"&&active){ctx.save();ctx.strokeStyle="#d8c28a99";ctx.lineWidth=2;let q=Math.sin(t*7);ctx.beginPath();ctx.moveTo(x+w*.57,y+h*.47);ctx.lineTo(x+w*.62+q*4,y+h*.62);ctx.stroke();ctx.restore()}if(b.type==="mason"&&active){ctx.save();ctx.strokeStyle="#e0c58f99";ctx.lineWidth=2;let q=Math.sin(t*8);ctx.beginPath();ctx.moveTo(x+w*.48,y+h*.46);ctx.lineTo(x+w*.55+q*3,y+h*.6);ctx.stroke();ctx.restore()}if(b.type==="cottage"&&(hour>=18||hour<6)){ctx.save();ctx.globalAlpha=.22+.09*Math.sin(t*3+b.id);ctx.fillStyle="#ffd77c";ctx.beginPath();ctx.arc(x+w*.31,y+h*.59,11,0,7);ctx.fill();ctx.restore()}if(b.upgrading){ctx.strokeStyle="#d6bd78";ctx.lineWidth=2;for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(x+12+k*20,y+8);ctx.lineTo(x+12+k*20,y+h-8);ctx.stroke()}ctx.beginPath();ctx.moveTo(x+7,y+h*.35);ctx.lineTo(x+w-7,y+h*.35);ctx.stroke()}}};
+(()=>{let base=Settlement.Renderer.prototype.draw;Settlement.Renderer.prototype.draw=function(){base.call(this);let g=this.game,ctx=this.ctx,cam=g.camera,W=this.c.width,H=this.c.height,j=g.juice;if(!j)return;ctx.save();ctx.translate(W/2,H/2);ctx.scale(cam.zoom*this.dpr,cam.zoom*this.dpr);ctx.translate(-cam.x,-cam.y);this.drawLivingBuildings(ctx,j);this.drawNightLights(ctx,j);this.drawCitizenProps(ctx,j);this.drawJuiceParticles(ctx,j);this.drawAmbient(ctx,j);this.drawBubbles(ctx,j);ctx.restore();this.drawAtmosphere(ctx,g)};
+Settlement.Renderer.prototype.drawLivingBuildings=function(ctx,j){let t=j.time,hour=this.game.clock.t/Settlement.Config.DAY_SECONDS*24;for(let b of this.game.buildings.list){if(!b.complete)continue;let x=b.x*64,y=b.y*64,w=b.w*64,h=b.h*64,d=Settlement.BuildingDefs[b.type],active=d?.recipe?this.game.production?.normalize(b)?.active:d?.production?(b.workers||0)>0:true;if(b.type==="farm"){let fp=this.game.farms.normalize(b);if(fp.crop&&fp.state!=="empty"){ctx.save();ctx.globalAlpha=.14;ctx.fillStyle="#e3ed8c";for(let i=0;i<8;i++){let sway=Math.sin(t*2+i)*2;ctx.beginPath();ctx.arc(x+14+(i%4)*28+sway,y+25+Math.floor(i/4)*48,4,0,7);ctx.fill()}ctx.restore()}}if(b.type==="bakery"&&active){ctx.save();ctx.globalAlpha=.13+.07*Math.sin(t*5);ctx.fillStyle="#ffbd55";ctx.beginPath();ctx.arc(x+w*.66,y+h*.63,15,0,7);ctx.fill();ctx.restore()}if(b.type==="quarry"&&active){ctx.save();ctx.strokeStyle="#d8c28a99";ctx.lineWidth=2;let q=Math.sin(t*7);ctx.beginPath();ctx.moveTo(x+w*.57,y+h*.47);ctx.lineTo(x+w*.62+q*4,y+h*.62);ctx.stroke();ctx.restore()}if(b.type==="mason"&&active){ctx.save();ctx.strokeStyle="#e0c58f99";ctx.lineWidth=2;let q=Math.sin(t*8);ctx.beginPath();ctx.moveTo(x+w*.48,y+h*.46);ctx.lineTo(x+w*.55+q*3,y+h*.6);ctx.stroke();ctx.restore()}if(b.type==="cottage"&&(hour>=18||hour<6)){ctx.save();ctx.globalAlpha=.22+.09*Math.sin(t*3+b.id);ctx.fillStyle="#ffd77c";ctx.beginPath();ctx.arc(x+w*.31,y+h*.59,11,0,7);ctx.fill();ctx.restore()}if(b.type==="archery"&&(b.workers||0)>0){ // the tower is visibly manned
+ ctx.save();let bob=Math.sin(t*1.5+b.id)*1.3,ax=x+w*.4,ay=y+h*.1+bob;
+ ctx.fillStyle="#3d5232";ctx.fillRect(ax,ay,7,11);
+ ctx.fillStyle="#d8b17b";ctx.beginPath();ctx.arc(ax+3.5,ay-3.5,3.4,0,7);ctx.fill();
+ ctx.strokeStyle="#8a6233";ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(ax+11,ay+4,5.5,-1.15,1.15);ctx.stroke();
+ ctx.restore();
+}
+if(b.upgrading){ctx.strokeStyle="#d6bd78";ctx.lineWidth=2;for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(x+12+k*20,y+8);ctx.lineTo(x+12+k*20,y+h-8);ctx.stroke()}ctx.beginPath();ctx.moveTo(x+7,y+h*.35);ctx.lineTo(x+w-7,y+h*.35);ctx.stroke()}}};
+/* One warm radial sprite, built once and reused for every lamp. Creating a
+   radial gradient per lamp per frame measured 33fps at night; blitting a
+   cached sprite restores 60fps. */
+Settlement.Renderer.prototype.lampSprite=function(){
+ if(this._lamp)return this._lamp;
+ let px=128,c=document.createElement("canvas");c.width=c.height=px;
+ let x=c.getContext("2d"),g=x.createRadialGradient(px/2,px/2,2,px/2,px/2,px/2);
+ g.addColorStop(0,"rgba(255,198,110,.85)");
+ g.addColorStop(.45,"rgba(255,180,88,.34)");
+ g.addColorStop(1,"rgba(255,170,80,0)");
+ x.fillStyle=g;x.fillRect(0,0,px,px);
+ this._lamp=c;return c;
+};
+/* Warm pools of light after dusk: hearths, gate lamps and tower braziers.
+   Skipped entirely when the lighting tier is off or the sun is up, and capped
+   so a large settlement cannot draw hundreds of lamps per frame. */
+Settlement.Renderer.prototype.drawNightLights=function(ctx,j){
+ if(this.game.quality?.get("lighting")===false)return;
+ let hour=this.game.clock.t/Settlement.Config.DAY_SECONDS*24,night=this.nightFactor(hour);
+ if(night<=0.02)return;
+ let t=j.time,drawn=0,cam=this.game.camera,
+     span=Math.max(innerWidth,innerHeight)/cam.zoom*0.75;
+ ctx.save();ctx.globalCompositeOperation="lighter";
+ for(const b of this.game.buildings.list){
+  if(!b.complete||drawn>=28)continue;
+  let lamp=b.type==="cottage"?1:b.type==="gate"?.9:b.type==="archery"?1.1:b.type==="bakery"?1.2:b.type==="mainHall"?1.5:0;
+  if(!lamp)continue;
+  let cx=(b.x+b.w/2)*64,cy=(b.y+b.h*.55)*64;
+  if(Math.abs(cx-cam.x)>span||Math.abs(cy-cam.y)>span)continue;   // cull offscreen
+  let flicker=.86+Math.sin(t*3.1+b.id*1.7)*.07+Math.sin(t*7.3+b.id)*.03,
+      r=52*lamp*flicker,a=Math.min(1,.62*night*lamp*flicker);
+  ctx.globalAlpha=a;ctx.drawImage(this.lampSprite(),cx-r,cy-r,r*2,r*2);
+  drawn++;
+ }
+ ctx.globalAlpha=1;ctx.restore();
+};
 Settlement.Renderer.prototype.drawCitizenProps=function(ctx,j){let icons={Lumberjack:"🪵",Farmer:"🧺",Miller:"🌾",Baker:"🥖",Stonecutter:"🪨",Stonemason:"🧱",Archer:"🏹"};ctx.font="11px serif";ctx.textAlign="left";for(let c of this.game.citizens.list){if(c.state==="SLEEPING")continue;let icon=icons[c.job];if(icon&&(c.state==="WORKING"||c.state==="TRAVEL_TO_WORK"||c.state==="TRAVEL_HOME")){let bob=Math.sin(j.time*6+c.id)*1.5;ctx.fillText(icon,c.x+6,c.y+8+bob)}if(this.game.roads?.isRoad(Math.floor(c.x/64),Math.floor(c.y/64))&&Math.random()<.018)this.game.juice.emit("dust",c.x,c.y+14,1)}};
 Settlement.Renderer.prototype.drawJuiceParticles=function(ctx,j){for(let p of j.particles){let a=Math.max(0,p.life/p.max);ctx.globalAlpha=a;ctx.fillStyle=p.kind==="smoke"?"#ddd7c0":p.kind==="leaf"?"#7ca34c":p.kind==="stone"?"#b9aa8b":p.kind==="spark"?"#f4d47a":"#c5aa7a";ctx.beginPath();ctx.arc(p.x,p.y,p.size*(p.kind==="smoke"?1.5:1),0,7);ctx.fill()}ctx.globalAlpha=1};
 Settlement.Renderer.prototype.drawAmbient=function(ctx,j){for(let a of j.ambient){ctx.globalAlpha=Math.min(1,a.life);ctx.fillStyle=a.kind==="bird"?"#28261f":"#e7cf64";if(a.kind==="bird"){ctx.strokeStyle="#28261f";ctx.lineWidth=2;ctx.beginPath();ctx.arc(a.x-4,a.y,6,-2.8,-.4);ctx.arc(a.x+7,a.y,6,-2.8,-.4);ctx.stroke()}else{ctx.beginPath();ctx.arc(a.x-3,a.y,3,0,7);ctx.arc(a.x+3,a.y,3,0,7);ctx.fill()}}ctx.globalAlpha=1};
