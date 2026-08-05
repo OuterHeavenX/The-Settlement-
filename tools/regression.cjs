@@ -55,6 +55,8 @@ async function run() {
   await page.goto(BASE_URL, { waitUntil: 'load' });
   await page.waitForTimeout(700);
   check('BOOT', (await G(() => !!window.game)) && await page.isVisible('#welcome'));
+  const startHour = await G(() => (window.game.clock.t / Settlement.Config.DAY_SECONDS) * 24);
+  check('NEW GAME OPENS IN DAYLIGHT', startHour >= 6 && startHour <= 19, `starts at hour ${startHour.toFixed(1)}`);
   await page.click('#start');
   await page.waitForTimeout(400);
   check('START', await page.isVisible('#bottomnav') && !(await page.isVisible('#welcome')));
@@ -437,6 +439,44 @@ async function run() {
   await page.click('#buildmenu .panel-close').catch(() => { });
   const navFit = await G(() => { const n = document.querySelector('#bottomnav'), r = n.getBoundingClientRect(); return [...n.querySelectorAll('.navbtn')].every(b => { const q = b.getBoundingClientRect(); return q.bottom <= r.bottom + 1 && q.top >= r.top - 1 && q.right <= r.right + 1; }); });
   check('NAV GRID INTACT', navFit, 'all 8 destinations fit the bar');
+
+  // ---------- HUD hygiene (bugs found by playing, not by the matrix) ----------
+  const hudHygiene = await G(() => {
+    const g = window.game, out = {};
+    const r = sel => { const e = document.querySelector(sel); if (!e || e.classList.contains('hidden')) return null; const b = e.getBoundingClientRect(); return b.height ? b : null; };
+    const hit = (a, b) => a && b && !(a.right < b.left || b.right < a.left || a.bottom < b.top || b.bottom < a.top);
+    // a burst of messages must neither bury the quest panel nor pile up
+    for (let i = 0; i < 12; i++) g.bus.emit('toast', 'test message ' + i);
+    out.toastCount = document.querySelectorAll('.toast').length;
+    out.toastOverQuest = hit(r('#questbox'), r('#toast-stack'));
+    document.querySelectorAll('.toast').forEach(t => t.remove());
+    // several levels at once must announce once, not once per level.
+    // onLevelUp is a pure announcement, so the real level is left untouched.
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.remove());
+    g.unlocks.onLevelUp(1, 6);
+    out.modals = document.querySelectorAll('.modal-backdrop').length;
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.remove());
+    return out;
+  });
+  check('TOASTS DO NOT BURY THE QUEST PANEL', !hudHygiene.toastOverQuest && hudHygiene.toastCount <= 3,
+    `12 messages -> ${hudHygiene.toastCount} on screen, clear of the quest panel`);
+  check('LEVEL-UP ANNOUNCES ONCE', hudHygiene.modals === 1, `gaining 5 levels opens ${hudHygiene.modals} modal`);
+
+  const chev = await G(() => {
+    const c = document.querySelector('.nav-hide'), m = document.querySelector('#buildmenu');
+    if (!c || !m || m.classList.contains('hidden')) return { skip: true };
+    const a = c.getBoundingClientRect(), b = m.getBoundingClientRect();
+    return { overlap: !(a.right < b.left || b.right < a.left || a.bottom < b.top || b.bottom < a.top) };
+  });
+  await clearModals();
+  await page.click('[data-nav="BUILD"]'); await page.waitForTimeout(220);
+  const chev2 = await G(() => {
+    const c = document.querySelector('.nav-hide'), m = document.querySelector('#buildmenu');
+    const a = c.getBoundingClientRect(), b = m.getBoundingClientRect();
+    return !(a.right < b.left || b.right < a.left || a.bottom < b.top || b.bottom < a.top);
+  });
+  check('HIDE CONTROL CLEARS THE BUILD MENU', !chev2, 'chevron does not sit on the panel');
+  await page.click('#buildmenu .panel-close').catch(() => { });
 
   // ---------- time ----------  // ---------- time ----------
   check('DAY/NIGHT', await G(() => { const g = window.game, d0 = g.clock.day; g.clock.update(240); return g.clock.day > d0 && !!g.clock.season; }));

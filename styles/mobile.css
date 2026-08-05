@@ -107,7 +107,7 @@
   left:max(8px,env(safe-area-inset-left));
   right:max(8px,env(safe-area-inset-right));
   top:var(--mobile-panel-top);
-  bottom:calc(var(--mobile-nav-h) + 14px + env(safe-area-inset-bottom));
+  bottom:calc(var(--mobile-nav-h) + 30px + env(safe-area-inset-bottom));
   width:auto;
   height:auto;
   max-height:none;
