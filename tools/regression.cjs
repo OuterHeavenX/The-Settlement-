@@ -216,15 +216,17 @@ async function run() {
     const panel = g.ui.mainHallPanel(h);
     g.resources.v = { gold: 9e4, wood: 9e4, stone: 9e4, food: 9e3, wheat: 900, flour: 900, bread: 900, clay: 9e3, cutStone: 9e3 };
     const before = g.resources.v.gold;
-    g.xp.level = 6; g.upgrades.startUpgrade(h);
-    for (let i = 0; i < 300; i++) g.upgrades.update(0.5);
+    const want = Settlement.BuildingDefs.mainHall.levels.find(l => l.level === 2);
+    g.xp.level = want.requiredTownLevel; g.upgrades.startUpgrade(h);
+    for (let i = 0; i < 600; i++) g.upgrades.update(0.5);
     return { footprint: h.w + 'x' + h.h, dup, panelLen: panel.length, hasLocked: /Locked/.test(panel),
-             level: h.level, spent: before - g.resources.v.gold, capGain: g.resources.capacity() - cap0 };
+             level: h.level, spent: before - g.resources.v.gold, wantGold: want.cost.gold,
+             capGain: g.resources.capacity() - cap0, maxLevel: Settlement.BuildingDefs.mainHall.levels.length };
   });
   check('MAIN HALL', hall.footprint === '4x4' && !hall.dup && hall.panelLen > 400 && hall.hasLocked,
     `${hall.footprint}, duplicate refused=${!hall.dup}, panel ${hall.panelLen} chars, locked tabs present`);
-  check('BUILDING UPGRADE FRAMEWORK', hall.level === 2 && hall.spent === 1400,
-    `Main Hall level 1 -> ${hall.level}, spent ${hall.spent} gold, storage +${hall.capGain}`);
+  check('BUILDING UPGRADE FRAMEWORK', hall.level === 2 && hall.spent === hall.wantGold && hall.maxLevel === 15,
+    `Main Hall level 1 -> ${hall.level}, spent ${hall.spent}/${hall.wantGold} gold, storage +${hall.capGain}, ${hall.maxLevel} levels`);
 
   const archer = await G(() => {
     const g = window.game, t = g.buildings.list.find(b => b.type === 'archery');
@@ -238,30 +240,125 @@ async function run() {
   check('ARCHER', !!archer && archer.off !== archer.on, archer ? `unmanned ${archer.off} vs manned ${archer.on} bytes` : 'no tower');
 
   const expo = await G(() => {
-    const g = window.game, ex = g.expansion, out = { start: ex.claimed, claims: [] };
-    const mk = (t, x, y) => { const b = g.buildings.create(t, x, y); b.complete = true; b.progress = 1; return b; };
-    for (let n = 0; n < 2; n++) {
-      const reg = ex.activeRegion(); if (!reg) break;
-      g.xp.level = Math.max(g.xp.level, reg.minLevel);
-      while (g.citizens.list.length < reg.minPopulation) g.citizens.add();
-      g.resources.v = { gold: 9e5, wood: 9e5, stone: 9e5, food: 9e4, wheat: 900, flour: 900, bread: 900, clay: 9e4, cutStone: 9e4 };
-      mk('archery', reg.rect.x - 1, reg.rect.y);
-      let gate = null;
-      for (const c of ex.perimeterCells()) { if (g.grid.isOccupied(c.x, c.y)) continue; const b = mk(gate ? 'wall' : 'gate', c.x, c.y); if (!gate) gate = b; }
-      if (gate) for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) { const x = gate.x+dx, y = gate.y+dy;
-        if (g.expansion.isClaimed(x,y) && !g.grid.isOccupied(x,y)) { mk('road', x, y); break; } }
-      out.claims.push({ name: reg.name, ok: ex.tryClaim() });
-    }
-    out.end = ex.claimed; out.total = ex.regions.length;
-    out.buildable = ex.canBuild('cottage', ex.claimedRects[ex.claimedRects.length-1].x+1, ex.claimedRects[ex.claimedRects.length-1].y+1, 2, 2);
+    const g = window.game, ex = g.expansion, out = {};
+    g.resources.v = { gold: 9e5, wood: 9e5, stone: 9e5, food: 9e4, wheat: 900, flour: 900, bread: 900, clay: 9e4, cutStone: 9e4 };
+    out.before = ex.totalTiles();
+    // find a tile just outside the border where a tower may legally stand
+    const r0 = ex.claimedRects[0];
+    const tx = r0.x + r0.w, ty = r0.y + 2;
+    out.canPlace = ex.canBuild('archery', tx, ty, 1, 1);
+    out.previewRect = ex.claimRectFor('archery', tx, ty, 1);
+    out.previewFresh = ex.unclaimedCells(out.previewRect).length;
+    const t = g.buildings.create('archery', tx, ty);
+    out.claimedBeforeComplete = ex.totalTiles();
+    t.complete = true; ex.onBuildingComplete(t);          // exactly what construction does
+    out.afterFirst = ex.totalTiles();
+    out.buildableNow = ex.canBuild('cottage', tx + 1, ty, 1, 1);
+    // a second tower further out claims again
+    const t2x = tx + 4;
+    const t2 = g.buildings.create('archery', t2x, ty);
+    t2.complete = true; ex.onBuildingComplete(t2);
+    out.afterSecond = ex.totalTiles();
+    // upgrading past a milestone widens the square
+    t.level = 5; g.bus.emit('building:upgraded', t);
+    out.afterMilestone = ex.totalTiles();
+    out.sizes = [ex.claimSize(1), ex.claimSize(5), ex.claimSize(10), ex.claimSize(15)];
+    // demolishing the tower must NOT revoke land
+    g.buildings.demolish(t.id);
+    out.afterDemolish = ex.totalTiles();
+    // no checklist survives
+    out.reqs = ex.requirements().length;
     return out;
   });
-  check('TERRITORY EXPANSION', expo.claims[0] && expo.claims[0].ok && expo.buildable,
-    `${expo.claims[0] ? expo.claims[0].name : '?'} claimed, new land buildable`);
-  check('SECOND EXPANSION', expo.claims[1] && expo.claims[1].ok && expo.end === expo.start + 2,
-    `${expo.claims[1] ? expo.claims[1].name : '?'} claimed, ${expo.end}/${expo.total} frontiers held`);
+  check('TERRITORY EXPANSION', expo.canPlace && expo.previewRect.w === 5 && expo.previewRect.h === 5 && expo.afterFirst > expo.claimedBeforeComplete && expo.buildableNow,
+    `5x5 preview (${expo.previewFresh} new tiles), ${expo.before} -> ${expo.afterFirst} tiles on completion, new land buildable`);
+  check('SECOND EXPANSION', expo.afterSecond > expo.afterFirst,
+    `${expo.afterFirst} -> ${expo.afterSecond} tiles`);
+  check('TOWER CLAIM MILESTONES', expo.sizes.join(',') === '5,7,9,11' && expo.afterMilestone > expo.afterSecond,
+    `sizes ${expo.sizes.join('/')} at levels 1/5/10/15, milestone widened ${expo.afterSecond} -> ${expo.afterMilestone}`);
+  check('NO EXPANSION CHECKLIST', expo.reqs === 0, 'walls, gates, population, roads and payments no longer gate territory');
+  check('TERRITORY PERMANENT', expo.afterDemolish === expo.afterMilestone,
+    `tower demolished, land held stays ${expo.afterDemolish} tiles`);
 
-  // ---------- time ----------
+  // ---------- levels, move, delete ----------
+  const lvl = await G(() => {
+    const D = Settlement.BuildingDefs, ids = Object.keys(D);
+    const bad = ids.filter(k => !Array.isArray(D[k].levels) || D[k].levels.length !== 15);
+    const costsRise = ids.every(k => { const L = D[k].levels; return L[14].cost.gold === undefined || L[14].cost.gold > (L[1].cost.gold || 0); });
+    return { count: ids.length, bad, costsRise,
+      cottageCap: D.cottage.levels.slice(0, 3).map(l => l.capacity).join(','),
+      cottageTL: D.cottage.levels.slice(0, 3).map(l => l.requiredTownLevel).join(','),
+      hallStore: D.mainHall.levels.slice(0, 5).map(l => l.storage).join(','),
+      capAt15: D.cottage.levels[14].capacity, prodAt15: D.lumber.levels[14].production.wood };
+  });
+  check('ALL STRUCTURES REACH LEVEL 15', lvl.bad.length === 0 && lvl.count === 14 && lvl.costsRise,
+    `${lvl.count}/14 definitions with 15 levels, costs escalate`);
+  check('HISTORICAL LEVELS PRESERVED', lvl.cottageCap === '2,4,6' && lvl.cottageTL === '1,3,6' && lvl.hallStore === '150,320,560,900,1400',
+    `cottage ${lvl.cottageCap} @ TL ${lvl.cottageTL}, hall storage ${lvl.hallStore}`);
+  check('LEVEL BENEFITS SCALE', lvl.capAt15 > 6 && lvl.prodAt15 > 10,
+    `cottage houses ${lvl.capAt15} at Lv15, lumber ${lvl.prodAt15}/day at Lv15`);
+
+  const mv = await G(() => {
+    const g = window.game, out = {};
+    const c = g.buildings.create('cottage', 128, 129); c.complete = true; c.progress = 1;
+    g.housing.reconcile();
+    const resident = g.citizens.list.find(x => x.home === c.id);
+    const before = { x: c.x, y: c.y, n: g.buildings.list.length, gold: g.resources.v.gold, wood: g.resources.v.wood, home: resident ? resident.id : null };
+    // find a genuinely free, claimed 2x2 destination
+    let dest = null;
+    for (const r of ex_rects()) { if (dest) break;
+      for (let y = r.y; y < r.y + r.h - 1 && !dest; y++) for (let x = r.x; x < r.x + r.w - 1 && !dest; x++) {
+        g.placement.moving = c;
+        const v = g.placement.validate('cottage', x, y);
+        g.placement.moving = null;
+        if (v.ok && !(x === c.x && y === c.y)) dest = { x, y };
+      }
+    }
+    function ex_rects() { return g.expansion.claimedRects; }
+    out.dest = dest ? dest.x + ',' + dest.y : 'none';
+    if (!dest) return out;
+    // MOVE: cancel must leave it exactly where it was
+    g.placement.startMove(c); g.placement.setPreviewTile(dest.x, dest.y); g.placement.cancel('user');
+    out.cancelKeptPlace = c.x === before.x && c.y === before.y && g.placement.type === null;
+    // MOVE: confirm relocates once, free of charge
+    g.placement.startMove(c); g.placement.setPreviewTile(dest.x, dest.y);
+    const moved = g.placement.confirm();
+    out.movedTo = c.x + ',' + c.y;
+    out.noDuplicate = g.buildings.list.length === before.n;
+    out.noCharge = g.resources.v.gold === before.gold && g.resources.v.wood === before.wood;
+    out.gridFreed = !g.grid.isOccupied(before.x, before.y);
+    out.gridTaken = g.grid.occupied.get(c.x + ',' + c.y) === c.id;
+    out.residentKept = !resident || resident.home === c.id;
+    out.placementCleared = g.placement.type === null && g.placement.moving === null;
+    return out;
+  });
+  check('MOVE CANCEL', mv.cancelKeptPlace, 'structure stayed exactly where it was');
+  check('MOVE CONFIRM', mv.movedTo === mv.dest && mv.noDuplicate && mv.noCharge && mv.gridFreed && mv.gridTaken && mv.residentKept && mv.placementCleared,
+    `moved to ${mv.movedTo} (target ${mv.dest}), no duplicate, no cost, old tiles freed, residents kept`);
+
+  const del = await G(() => {
+    const g = window.game, out = {};
+    const mk = (t, x, y) => { const b = g.buildings.create(t, x, y); b.complete = true; b.progress = 1; const d = Settlement.BuildingDefs[t]; if (d.workers) { b.workers = d.workers; g.citizens.assign(b); } return b; };
+    const results = {};
+    for (const type of ['road', 'wall', 'gate', 'archery', 'lumber', 'cottage', 'farm']) {
+      const b = mk(type, 129 + Object.keys(results).length, 135);
+      if (type === 'farm') g.farms.normalize(b);
+      const worker = g.citizens.list.find(c => c.workplace === b.id);
+      const n0 = g.buildings.list.length;
+      const ok = g.buildings.demolish(b.id);
+      results[type] = ok && g.buildings.list.length === n0 - 1
+        && !g.grid.isOccupied(b.x, b.y) && !g.buildings.byId(b.id)
+        && (!worker || (worker.workplace === null && worker.job === 'Unassigned'))
+        && (type !== 'farm' || !g.farms.plots.has(b.id));
+    }
+    out.results = results;
+    out.allClean = Object.values(results).every(Boolean);
+    return out;
+  });
+  check('DELETE ALL STRUCTURE TYPES', del.allClean,
+    Object.entries(del.results).map(([k, v]) => `${k}:${v ? 'ok' : 'FAIL'}`).join(' '));
+
+  // ---------- time ----------  // ---------- time ----------
   check('DAY/NIGHT', await G(() => { const g = window.game, d0 = g.clock.day; g.clock.update(240); return g.clock.day > d0 && !!g.clock.season; }));
   check('SEASONS', await G(() => { const g = window.game, seen = new Set(); for (let i = 0; i < 40; i++) { g.clock.update(240); seen.add(g.clock.season); } return seen.size >= 2; }));
 
