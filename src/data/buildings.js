@@ -16,5 +16,9 @@ Settlement.BuildingDefs={
  road:{id:"road",name:"Dirt Path",category:"Roads",icon:"🛤️",footprint:[1,1],cost:{gold:1},buildTime:.2,road:true,xpReward:0,requiredTownLevel:2},
  mill:{id:"mill",name:"Mill",category:"Production",icon:"⚙️",footprint:[2,2],cost:{wood:95,stone:45,gold:150},buildTime:16,workers:1,recipe:"millFlour",xpReward:75,requiredTownLevel:3},
  bakery:{id:"bakery",name:"Bakery",category:"Production",icon:"🥖",footprint:[2,2],cost:{wood:110,stone:55,gold:190},buildTime:18,workers:1,recipe:"bakeBread",xpReward:90,requiredTownLevel:4},
- mainHall:{id:"mainHall",name:"Main Hall",category:"Civic",icon:"🏛️",footprint:[4,4],cost:{wood:320,stone:180,gold:600},buildTime:45,xpReward:250,requiredTownLevel:3,storage:150,unique:true}
+ mainHall:{id:"mainHall",name:"Main Hall",category:"Civic",icon:"🏛️",footprint:[4,4],cost:{wood:320,stone:180,gold:600},buildTime:45,xpReward:250,requiredTownLevel:3,storage:150,unique:true},
+ ironMine:{id:"ironMine",name:"Iron Mine",category:"Production",icon:"⛏️",footprint:[3,2],cost:{wood:125,stone:80,cutStone:12,gold:260},buildTime:20,workers:1,production:{ironOre:6},xpReward:110,requiredTownLevel:5},
+ smelter:{id:"smelter",name:"Smelter",category:"Production",icon:"🔥",footprint:[2,2],cost:{wood:150,stone:110,cutStone:20,gold:340},buildTime:24,workers:1,recipe:"smeltIron",xpReward:130,requiredTownLevel:6},
+ blacksmith:{id:"blacksmith",name:"Blacksmith",category:"Production",icon:"⚒️",footprint:[2,2],cost:{wood:175,stone:95,cutStone:28,gold:420},buildTime:28,workers:1,recipe:"forgeTools",xpReward:150,requiredTownLevel:7},
+ market:{id:"market",name:"Market",category:"Commerce",icon:"🏪",footprint:[3,3],cost:{wood:135,stone:65,cutStone:12,gold:300},buildTime:22,xpReward:120,requiredTownLevel:5}
 };
