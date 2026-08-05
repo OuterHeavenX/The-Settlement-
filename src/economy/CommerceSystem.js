@@ -1,0 +1,18 @@
+Settlement.CommerceSystem=class{
+ constructor(game){this.game=game;this.state={active:false,merchant:null,orders:[],expiresAt:0,nextAt:0,visitId:0};this.tick=0;this.names=["Aldric the Peddler","Mara of Greyford","Silas Vane","Edwin Blackmere","Nora Ashcroft","Bram Holloway"]}
+ market(){return this.game.buildings.list.find(b=>b.type==="market"&&b.complete)||null}
+ availableTemplates(){let g=this.game,built=t=>g.buildings.list.some(b=>b.type===t&&b.complete),t=[
+  {key:"wood",requires:{wood:40},reward:{gold:120},label:"Seasoned Timber"},
+  {key:"stone",requires:{stone:30},reward:{gold:135},label:"Building Stone"},
+  {key:"wheat",requires:{wheat:30},reward:{gold:140},label:"Grain Shipment"}
+ ];if(built("bakery"))t.push({key:"bread",requires:{bread:18},reward:{gold:190},label:"Baker's Lot"});if(built("mason"))t.push({key:"cutStone",requires:{cutStone:12},reward:{gold:220},label:"Dressed Stone"});if(built("ironMine"))t.push({key:"ironOre",requires:{ironOre:12},reward:{gold:250},label:"Iron Ore Consignment"});if(built("smelter"))t.push({key:"ironBar",requires:{ironBar:6},reward:{gold:340},label:"Iron Bar Contract"});if(built("blacksmith"))t.push({key:"tools",requires:{tools:3},reward:{gold:480},label:"Masterwork Tools"});return t}
+ generateOrders(visitId){let src=this.availableTemplates(),out=[];if(!src.length)return out;let start=(visitId*3+this.game.xp.level)%src.length;for(let i=0;i<Math.min(3,src.length);i++){let x=src[(start+i*2)%src.length];out.push({id:visitId+":"+i,label:x.label,requires:{...x.requires},reward:{...x.reward},completed:false})}return out}
+ schedule(now=Date.now(),short=false){this.state.nextAt=now+(short?60000:(18+Math.floor(Math.random()*10))*60000)}
+ arrive(now=Date.now()){if(!this.market()||this.state.active)return false;let id=(this.state.visitId||0)+1;this.state={active:true,merchant:this.names[id%this.names.length],orders:this.generateOrders(id),expiresAt:now+15*60000,nextAt:0,visitId:id};this.game.bus.emit("commerce:changed",this.state);this.game.bus.emit("toast","🔔 "+this.state.merchant+" has arrived at the Market.");this.game.save?.save();return true}
+ depart(now=Date.now()){if(!this.state.active)return false;this.state.active=false;this.state.merchant=null;this.state.orders=[];this.state.expiresAt=0;this.schedule(now,false);this.game.bus.emit("commerce:changed",this.state);return true}
+ complete(orderId){let o=this.state.orders.find(x=>x.id===orderId);if(!this.state.active||!o||o.completed)return false;if(!this.game.resources.has(o.requires)){this.game.bus.emit("toast","Not enough goods for this trade.");return false}o.completed=true;if(!this.game.resources.spend(o.requires)){o.completed=false;return false}this.game.resources.add(o.reward);this.game.bus.emit("commerce:changed",this.state);this.game.bus.emit("toast","🤝 Trade completed — +"+(o.reward.gold||0)+" Gold.");this.game.save?.save();return true}
+ remaining(now=Date.now()){return this.state.active?Math.max(0,this.state.expiresAt-now):0}
+ snapshot(){return JSON.parse(JSON.stringify(this.state))}
+ apply(saved){if(saved&&typeof saved==="object")this.state={active:false,merchant:null,orders:[],expiresAt:0,nextAt:0,visitId:0,...saved};let now=Date.now();if(this.state.active&&this.state.expiresAt<=now)this.depart(now);else if(!this.state.active&&!this.state.nextAt&&this.market())this.schedule(now,true);this.game.bus.emit("commerce:changed",this.state)}
+ update(dt){this.tick+=dt;if(this.tick<1)return;this.tick=0;let now=Date.now(),market=this.market();if(!market){if(this.state.active)this.depart(now);return}if(this.state.active){if(now>=this.state.expiresAt)this.depart(now);return}if(!this.state.nextAt)this.schedule(now,true);if(now>=this.state.nextAt)this.arrive(now)}
+};
