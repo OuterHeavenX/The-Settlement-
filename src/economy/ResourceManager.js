@@ -1,5 +1,5 @@
 Settlement.ResourceManager=class{
- constructor(game){this.game=game;this.v={gold:480,wood:260,stone:110,food:150,wheat:0,flour:0,bread:0,clay:40};this.baseCap=700}
+ constructor(game){this.game=game;this.v={gold:480,wood:260,stone:110,food:150,wheat:0,flour:0,bread:0,cutStone:0,ironOre:0,ironBar:0,tools:0,clay:40};this.baseCap=700}
  has(cost={}){return Object.entries(cost).every(([k,v])=>(this.v[k]||0)>=v)}
  spend(cost={}){if(!this.has(cost))return false;for(const[k,v]of Object.entries(cost))this.v[k]-=v;this.changed();return true}
  consume(k,n){let take=Math.min(Math.max(0,this.v[k]||0),Math.max(0,n||0));this.v[k]=(this.v[k]||0)-take;this.changed();return take}
