@@ -10,3 +10,8 @@
 .resident-list{display:grid;gap:5px;margin:7px 0 12px;padding:8px;background:#d7bf8f66;border:1px solid #8b673b;border-radius:9px}.citizen-card{width:100%;text-align:left;color:#332316;cursor:pointer}.citizen-card:active{transform:translateY(1px)}
 
 .unlock-item{padding:8px 10px;margin:6px 0;border:1px solid #9a7642;border-radius:8px;background:#e1c99488;font-weight:700}
+
+.settings-note{font-size:12px;line-height:1.35;color:#54402a;margin:2px 0 9px}
+.quality-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:6px;margin:0 0 14px}
+.quality-choice{pointer-events:auto;padding:9px 6px;font-size:12px;font-weight:700;color:#3a2818;background:linear-gradient(#ecd9ae,#d3b47c);border:1px solid #7d5a33;border-radius:9px}
+.quality-choice.active{background:linear-gradient(#8c5c33,#57351d);color:#ffeec4;border-color:#3a2312;box-shadow:inset 0 2px #b57f4b}
