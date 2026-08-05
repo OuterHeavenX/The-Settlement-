@@ -20,5 +20,5 @@ Settlement.BuildingDefs={
  ironMine:{id:"ironMine",name:"Iron Mine",category:"Production",icon:"⛏️",footprint:[3,2],cost:{wood:125,stone:80,cutStone:12,gold:260},buildTime:20,workers:1,production:{ironOre:6},xpReward:110,requiredTownLevel:5},
  smelter:{id:"smelter",name:"Smelter",category:"Production",icon:"🔥",footprint:[2,2],cost:{wood:150,stone:110,cutStone:20,gold:340},buildTime:24,workers:1,recipe:"smeltIron",xpReward:130,requiredTownLevel:6},
  blacksmith:{id:"blacksmith",name:"Blacksmith",category:"Production",icon:"⚒️",footprint:[2,2],cost:{wood:175,stone:95,cutStone:28,gold:420},buildTime:28,workers:1,recipe:"forgeTools",xpReward:150,requiredTownLevel:7},
- market:{id:"market",name:"Market",category:"Commerce",icon:"🏪",footprint:[3,3],cost:{wood:135,stone:65,cutStone:12,gold:300},buildTime:22,xpReward:120,requiredTownLevel:5}
+ market:{id:"market",name:"Market",category:"Civic",icon:"🏪",footprint:[3,3],cost:{wood:135,stone:65,cutStone:12,gold:300},buildTime:22,xpReward:120,requiredTownLevel:5}
 };
