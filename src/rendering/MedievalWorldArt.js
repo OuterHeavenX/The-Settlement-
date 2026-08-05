@@ -33,7 +33,35 @@ Settlement.MedievalWorldArt=class{
   else if(q>0&&this.hash(x,y,4)<.09*q){c.fillStyle=p.bush;c.beginPath();c.arc(x*T+18,y*T+23,7,0,7);c.fill()}
  }
  claimedBounds(){let c=this.ctx,T=this.T;c.save();c.lineWidth=2;c.strokeStyle="#e3cf8f55";for(let r of this.game.expansion.claimedRects||[]){c.strokeRect(r.x*T+3,r.y*T+3,r.w*T-6,r.h*T-6);let pts=[[r.x*T+7,r.y*T+7],[(r.x+r.w)*T-7,r.y*T+7],[r.x*T+7,(r.y+r.h)*T-7],[(r.x+r.w)*T-7,(r.y+r.h)*T-7]];c.fillStyle="#7a5b35";for(let [px,py] of pts){c.fillRect(px-2,py-6,4,12);c.fillStyle="#d8c58a";c.fillRect(px-1,py-7,2,4);c.fillStyle="#7a5b35"}}c.restore()}
- frontier(){let p=this.game.expansion.preview;if(!p)return;let c=this.ctx,T=this.T;c.save();c.strokeStyle="#e9d98999";c.lineWidth=2;c.setLineDash([10,8]);c.strokeRect(p.x*T+2,p.y*T+2,p.w*T-4,p.h*T-4);c.setLineDash([]);let label=this.game.expansion.activeRegion()?.name||"Frontier",cx=(p.x+p.w/2)*T,ly=p.y*T-16;c.font="bold 16px Georgia";c.textAlign="center";let tw=c.measureText(label).width+20;c.fillStyle="#2b241bcc";c.fillRect(cx-tw/2,ly-16,tw,23);c.strokeStyle="#d8c58a99";c.strokeRect(cx-tw/2,ly-16,tw,23);c.fillStyle="#f0dfa8";c.fillText(label,cx,ly);c.restore()}
+ /* Frontier marker: surveyor's stakes and a banner rather than a debug box.
+    Turns green once every claim requirement is satisfied. */
+ frontier(){
+  let ex=this.game.expansion,p=ex.preview;if(!p)return;
+  let c=this.ctx,T=this.T,t=this.game.juice?.time||0,
+      ready=false;
+  try{ready=!!ex.status().complete}catch(e){}
+  let edge=ready?"#a8d97a":"#e9d989",stake="#7a5b35",fill=ready?"#a8d97a0e":"#e9d9890a",
+      x=p.x*T+2,y=p.y*T+2,w=p.w*T-4,h=p.h*T-4;
+  c.save();
+  c.fillStyle=fill;c.fillRect(x,y,w,h);
+  c.strokeStyle=edge+"aa";c.lineWidth=2;c.setLineDash([10,8]);c.lineDashOffset=-(t*18)%18;
+  c.strokeRect(x,y,w,h);c.setLineDash([]);c.lineDashOffset=0;
+  // stakes every few tiles along the boundary, capped so huge frontiers stay cheap
+  let step=Math.max(2,Math.round(Math.max(p.w,p.h)/12))*T,drawn=0;
+  const post=(px,py)=>{if(drawn++>60)return;c.fillStyle=stake;c.fillRect(px-2,py-9,4,14);c.fillStyle=edge;c.fillRect(px-1,py-10,2,5)};
+  for(let px=x;px<=x+w;px+=step){post(px,y);post(px,y+h)}
+  for(let py=y;py<=y+h;py+=step){post(x,py);post(x+w,py)}
+  let label=ex.activeRegion()?.name||"Frontier",
+      sub=ready?"READY TO CLAIM":"FRONTIER",
+      cx=x+w/2,ly=y-18;
+  c.font="bold 16px Georgia";c.textAlign="center";
+  let tw=Math.max(c.measureText(label).width,c.measureText(sub).width)+26;
+  c.fillStyle="#2b241bd8";c.fillRect(cx-tw/2,ly-30,tw,40);
+  c.strokeStyle=edge+"99";c.lineWidth=2;c.strokeRect(cx-tw/2,ly-30,tw,40);
+  c.fillStyle="#f0dfa8";c.fillText(label,cx,ly-13);
+  c.font="bold 10px Georgia";c.fillStyle=ready?"#b6e88c":"#d8c58a";c.fillText(sub,cx,ly+1);
+  c.restore();
+ }
  shadow(x,y,w,h){let c=this.ctx;c.fillStyle="#26302128";c.beginPath();c.ellipse(x+w*.53,y+h*.82,w*.42,h*.16,0,0,7);c.fill()}
  timberFrame(x,y,w,h,level=1){let c=this.ctx,p=this.palette;c.fillStyle=p.woodDark;c.fillRect(x,y,w,h);c.fillStyle=level>=3?p.plasterLight:p.plaster;c.fillRect(x+6,y+5,w-12,h-8);c.strokeStyle=p.wood;c.lineWidth=4;c.strokeRect(x+7,y+6,w-14,h-10);c.beginPath();c.moveTo(x+8,y+7);c.lineTo(x+w-8,y+h-5);c.moveTo(x+w-8,y+7);c.lineTo(x+8,y+h-5);c.stroke()}
  roof(x,y,w,h,kind="shingle",level=1){let c=this.ctx,p=this.palette;c.fillStyle=kind==="thatch"?p.thatch:(level>=3?"#49302a":p.roof);c.beginPath();c.moveTo(x-5,y+h*.34);c.lineTo(x+w*.5,y);c.lineTo(x+w+5,y+h*.34);c.lineTo(x+w-4,y+h*.41);c.lineTo(x+4,y+h*.41);c.closePath();c.fill();c.strokeStyle="#3a241a";c.lineWidth=2;c.stroke();if(kind!=="thatch"){c.strokeStyle="#8b574155";for(let yy=y+8;yy<y+h*.32;yy+=8){c.beginPath();c.moveTo(x+8,yy);c.lineTo(x+w-8,yy);c.stroke()}}}
