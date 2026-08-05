@@ -26,8 +26,8 @@
   if(lv<=1)return null;
   let mult=Math.pow(1.62,lv-2)*2.1,out={};
   for(const[k,v]of Object.entries(base||{}))out[k]=r(v*mult);
-  if(lv>=4)out.cutStone=r(12*Math.pow(1.5,lv-4));
-  if(lv>=6)out.clay=r(20*Math.pow(1.45,lv-6));
+  if(lv>=4&&out.cutStone==null)out.cutStone=r(12*Math.pow(1.5,lv-4));
+  if(lv>=6&&out.clay==null)out.clay=r(20*Math.pow(1.45,lv-6));
   return out;
  };
  const townLevel=(d,lv)=>{
