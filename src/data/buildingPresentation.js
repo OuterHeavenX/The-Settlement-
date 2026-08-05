@@ -12,5 +12,9 @@ Settlement.BuildingPresentation={
  wall:{style:"palisade",materials:["roughTimber"]},
  gate:{style:"gate",materials:["roughTimber","iron"],entrance:"center"},
  road:{style:"dirtRoad",materials:["dirt"]},
- mainHall:{style:"mainHall",materials:["timber","plaster","stone"],roof:"tile",entrance:"south",chimney:true,props:["banner","steps","lantern"]}
+ mainHall:{style:"mainHall",materials:["timber","plaster","stone"],roof:"tile",entrance:"south",chimney:true,props:["banner","steps","lantern"]},
+ ironMine:{style:"ironMine",materials:["stone","roughTimber","iron"],entrance:"south",props:["orePile","cart","timberSupport","lantern"]},
+ smelter:{style:"smelter",materials:["darkStone","iron"],roof:"tile",entrance:"south",chimney:true,props:["orePile","barMolds","cart"],warmWindows:true},
+ blacksmith:{style:"blacksmith",materials:["stone","timber","iron"],roof:"tile",entrance:"south",chimney:true,props:["anvil","toolRack","ironBars"],warmWindows:true},
+ market:{style:"market",materials:["timber","cloth","stone"],entrance:"south",props:["stalls","crates","barrels","banners","lanterns"]}
 };
