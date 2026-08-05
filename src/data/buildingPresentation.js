@@ -11,5 +11,6 @@ Settlement.BuildingPresentation={
  archery:{style:"archeryTower",materials:["roughTimber"],roof:"shingle",entrance:"south",props:["banner"]},
  wall:{style:"palisade",materials:["roughTimber"]},
  gate:{style:"gate",materials:["roughTimber","iron"],entrance:"center"},
- road:{style:"dirtRoad",materials:["dirt"]}
+ road:{style:"dirtRoad",materials:["dirt"]},
+ mainHall:{style:"mainHall",materials:["timber","plaster","stone"],roof:"tile",entrance:"south",chimney:true,props:["banner","steps","lantern"]}
 };

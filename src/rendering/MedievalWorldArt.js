@@ -80,8 +80,43 @@ Settlement.MedievalWorldArt=class{
  wall(b,x,y,w,h){let c=this.ctx,n=this.neighbors(b,"wall","gate");c.fillStyle="#6b482b";let horiz=n.l||n.r,vert=n.u||n.d;if(horiz&&!vert){c.fillRect(x,y+22,w,20);for(let i=0;i<7;i++){c.fillStyle=i%2?"#7e5632":"#69462b";c.fillRect(x+i*10,y+17,8,30)}}else{c.fillRect(x+22,y,20,h);for(let i=0;i<7;i++){c.fillStyle=i%2?"#7e5632":"#69462b";c.fillRect(x+17,y+i*10,30,8)}}c.fillStyle="#3f2d20";for(let i=0;i<4;i++){let px=horiz?x+5+i*18:x+26,py=horiz?y+22:y+5+i*18;c.beginPath();c.moveTo(px,py);c.lineTo(px+6,py-8);c.lineTo(px+12,py);c.closePath();c.fill()}}
  gate(x,y,w,h){let c=this.ctx;c.fillStyle="#5b3d28";c.fillRect(x+4,y+8,12,h-12);c.fillRect(x+w-16,y+8,12,h-12);c.fillStyle="#3f2b1d";c.fillRect(x+3,y+8,w-6,9);c.fillStyle="#734a2b";c.fillRect(x+17,y+22,w-34,h-26);c.strokeStyle="#b08a53";c.lineWidth=2;c.strokeRect(x+18,y+23,w-36,h-28);c.beginPath();c.moveTo(x+w/2,y+23);c.lineTo(x+w/2,y+h-5);c.stroke();c.fillStyle="#4a311f";c.beginPath();c.moveTo(x+1,y+10);c.lineTo(x+10,y);c.lineTo(x+19,y+10);c.closePath();c.fill();c.beginPath();c.moveTo(x+w-19,y+10);c.lineTo(x+w-10,y);c.lineTo(x+w-1,y+10);c.closePath();c.fill()}
  road(b,x,y,w,h){let c=this.ctx,n=this.neighbors(b,"road"),cx=x+w/2,cy=y+h/2,th=28;c.fillStyle="#6b7d4a55";c.fillRect(x,y,w,h);c.fillStyle=this.palette.dirt;c.beginPath();c.rect(cx-th/2,cy-th/2,th,th);if(n.l)c.rect(x,cy-th/2,w/2,th);if(n.r)c.rect(cx,cy-th/2,w/2,th);if(n.u)c.rect(cx-th/2,y,th,h/2);if(n.d)c.rect(cx-th/2,cy,th,h/2);c.fill();c.fillStyle=this.palette.dirtLight+"88";c.fillRect(cx-6,cy-3,12,6);let hsh=this.hash(b.x,b.y,9);if(hsh>.45){c.fillStyle="#73665388";c.beginPath();c.arc(x+15+hsh*20,y+17,2.2,0,7);c.fill()}}
+ /* Civic centrepiece. Silhouette grows with level: timber hall -> stone civic
+    hall -> manor seat, with banners and lit windows at higher levels. */
+ mainHall(b,x,y,w,h){
+  let c=this.ctx,p=this.palette,lv=Math.max(1,Math.min(5,b.level||1)),stone=lv>=3,grand=lv>=4;
+  this.shadow(x,y,w,h);
+  // stepped stone plinth
+  c.fillStyle=stone?"#8b887b":"#7d7263";c.fillRect(x+10,y+h*.68,w-20,h*.18);
+  c.fillStyle=stone?"#a09d90":"#8e8271";c.fillRect(x+16,y+h*.66,w-32,h*.05);
+  // main block
+  let bx=x+18-(lv-1)*2,by=y+h*.3,bw=w-36+(lv-1)*4,bh=h*.4;
+  if(stone){c.fillStyle="#6f6d65";c.fillRect(bx,by,bw,bh);c.fillStyle="#9a9689";c.fillRect(bx+5,by+4,bw-10,bh-7);
+   c.strokeStyle="#5c5a52";c.lineWidth=2;for(let i=1;i<4;i++){c.beginPath();c.moveTo(bx+5,by+4+i*(bh-7)/4);c.lineTo(bx+bw-5,by+4+i*(bh-7)/4);c.stroke()}}
+  else this.timberFrame(bx,by,bw,bh,lv);
+  // great roof
+  this.roof(x+12-(lv-1)*3,y+6,w-24+(lv-1)*6,h*.56,lv>=2?"shingle":"thatch",lv);
+  // central doorway with steps
+  c.fillStyle="#43291a";c.fillRect(x+w*.44,y+h*.5,w*.12,h*.22);
+  c.fillStyle="#c9a262";c.beginPath();c.arc(x+w*.53,y+h*.62,2,0,7);c.fill();
+  c.fillStyle=stone?"#b0ad9f":"#9c8a6e";for(let i=0;i<3;i++)c.fillRect(x+w*.42-i*3,y+h*.72+i*4,w*.16+i*6,4);
+  // windows, warm after dusk
+  let hour=(this.game.clock?.t||0)/Settlement.Config.DAY_SECONDS*24,warm=hour>=17||hour<7;
+  this.windows(bx,by,bw,bh,lv>=3?3:2,warm);
+  // twin banners
+  for(const s of [-1,1]){
+   let px=x+w*.5+s*(w*.3);
+   c.fillStyle="#5b4026";c.fillRect(px-2,y+h*.24,4,h*.46);
+   c.fillStyle=grand?"#8d2f2f":"#3f5f7a";c.beginPath();c.moveTo(px+2,y+h*.26);c.lineTo(px+2+s*13,y+h*.3);c.lineTo(px+2,y+h*.44);c.closePath();c.fill();
+   c.fillStyle="#e0c271";c.fillRect(px-1,y+h*.22,2,5);
+  }
+  if(grand){ // corner turrets
+   for(const s of [-1,1]){let tx=x+w*.5+s*(w*.42)-6;c.fillStyle="#6f6d65";c.fillRect(tx,y+h*.36,12,h*.36);
+    c.fillStyle="#4b3a2a";c.beginPath();c.moveTo(tx-3,y+h*.37);c.lineTo(tx+6,y+h*.22);c.lineTo(tx+15,y+h*.37);c.closePath();c.fill()}
+  }
+  if(lv>=5){c.strokeStyle="#d9b95e";c.lineWidth=2;c.strokeRect(x+8,y+h*.64,w-16,h*.26)}
+ }
  neighbors(b,...types){let list=this.game.buildings.list,has=(x,y)=>list.some(o=>o.complete&&types.includes(o.type)&&o.x===x&&o.y===y);return{l:has(b.x-1,b.y),r:has(b.x+1,b.y),u:has(b.x,b.y-1),d:has(b.x,b.y+1)}}
- drawBuilding(b,alpha=1){let d=Settlement.BuildingDefs[b.type],x=b.x*this.T,y=b.y*this.T,w=b.w*this.T,h=b.h*this.T,c=this.ctx;if(!d)return;c.save();c.globalAlpha=alpha;if(b.type==="cottage")this.cottage(b,x,y,w,h);else if(b.type==="farm")this.farm(b,x,y,w,h);else if(b.type==="lumber")this.lumber(x,y,w,h);else if(b.type==="warehouse")this.warehouse(x,y,w,h);else if(b.type==="mill")this.mill(b,x,y,w,h);else if(b.type==="bakery")this.bakery(b,x,y,w,h);else if(b.type==="quarry")this.quarry(x,y,w,h);else if(b.type==="mason")this.mason(x,y,w,h);else if(b.type==="training")this.training(x,y,w,h);else if(b.type==="archery")this.archery(x,y,w,h);else if(b.type==="wall")this.wall(b,x,y,w,h);else if(b.type==="gate")this.gate(x,y,w,h);else if(b.type==="road")this.road(b,x,y,w,h);else{this.shadow(x,y,w,h);this.timberFrame(x+10,y+h*.35,w-20,h*.45,1);this.roof(x+6,y+4,w-12,h*.7,"shingle",1)}c.restore()}
+ drawBuilding(b,alpha=1){let d=Settlement.BuildingDefs[b.type],x=b.x*this.T,y=b.y*this.T,w=b.w*this.T,h=b.h*this.T,c=this.ctx;if(!d)return;c.save();c.globalAlpha=alpha;if(b.type==="cottage")this.cottage(b,x,y,w,h);else if(b.type==="farm")this.farm(b,x,y,w,h);else if(b.type==="lumber")this.lumber(x,y,w,h);else if(b.type==="warehouse")this.warehouse(x,y,w,h);else if(b.type==="mill")this.mill(b,x,y,w,h);else if(b.type==="bakery")this.bakery(b,x,y,w,h);else if(b.type==="quarry")this.quarry(x,y,w,h);else if(b.type==="mason")this.mason(x,y,w,h);else if(b.type==="training")this.training(x,y,w,h);else if(b.type==="archery")this.archery(x,y,w,h);else if(b.type==="wall")this.wall(b,x,y,w,h);else if(b.type==="gate")this.gate(x,y,w,h);else if(b.type==="road")this.road(b,x,y,w,h);else if(b.type==="mainHall")this.mainHall(b,x,y,w,h);else{this.shadow(x,y,w,h);this.timberFrame(x+10,y+h*.35,w-20,h*.45,1);this.roof(x+6,y+4,w-12,h*.7,"shingle",1)}c.restore()}
  drawGhost(type,x,y,alpha=.6){let d=Settlement.BuildingDefs[type];if(!d)return;let fake={type,x,y,w:d.footprint[0],h:d.footprint[1],complete:true,level:1,id:-1,workers:0};this.drawBuilding(fake,alpha)}
  drawConstruction(b){let c=this.ctx,x=b.x*this.T,y=b.y*this.T,w=b.w*this.T,h=b.h*this.T,p=Math.max(0,Math.min(1,b.progress||0));c.save();this.shadow(x,y,w,h);c.fillStyle="#8f7854";c.fillRect(x+8,y+h*.72,w-16,9);c.strokeStyle="#6d4a2c";c.lineWidth=4;let posts=Math.max(2,Math.floor(w/40));for(let i=0;i<posts;i++){let px=x+12+i*(w-24)/(posts-1);c.beginPath();c.moveTo(px,y+h*.68);c.lineTo(px,y+h*(.68-.38*Math.min(1,p*2)));c.stroke()}if(p>.3){c.strokeStyle="#7d5633";c.beginPath();c.moveTo(x+12,y+h*.45);c.lineTo(x+w-12,y+h*.45);c.stroke()}if(p>.55){c.globalAlpha=.55+Math.min(.35,(p-.55));c.fillStyle="#bca474";c.fillRect(x+14,y+h*.38,w-28,h*.3);c.globalAlpha=1}if(p>.75){c.fillStyle="#5a3420";c.beginPath();c.moveTo(x+8,y+h*.38);c.lineTo(x+w/2,y+8);c.lineTo(x+w-8,y+h*.38);c.closePath();c.fill()}c.fillStyle="#6b4a2d";for(let i=0;i<4;i++)c.fillRect(x+8+i*9,y+h*.82,8,4);c.restore()}
 };

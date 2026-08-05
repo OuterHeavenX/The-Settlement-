@@ -22,3 +22,11 @@
 .frontier-req span{font-weight:800;text-align:center}
 .frontier-req.met{background:#b9cb8d88;border-color:#6f8a45;color:#2f3d1e}
 .frontier-req.unmet{color:#5a4227}
+
+.hall-title{font-weight:700;font-size:14px;margin:0 0 8px;color:#3f2c19}
+.hall-grid{display:grid;gap:4px;margin:0 0 10px}
+.hall-row{display:flex;justify-content:space-between;gap:10px;padding:6px 9px;border:1px solid #8b673b;border-radius:8px;background:#d7bf8f55;font-size:12.5px}
+.hall-row b{color:#3d2a17}
+.hall-locked{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0 0 10px}
+.hall-locked>div{padding:8px 9px;border:1px dashed #8b673b;border-radius:8px;background:#cbb59355;font-size:12.5px;font-weight:700;color:#6b563c;opacity:.85}
+.hall-locked small{display:block;font-weight:400;font-size:11px;margin-top:2px}
