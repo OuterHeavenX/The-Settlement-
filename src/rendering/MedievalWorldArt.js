@@ -1,7 +1,37 @@
 Settlement.MedievalWorldArt=class{
  constructor(renderer){this.r=renderer;this.game=renderer.game;this.ctx=renderer.ctx;this.T=Settlement.Config.TILE||64;this.palette={grass:["#667e49","#6b824c","#708751","#617846"],claimed:"#d8c58a",dirt:"#8c7353",dirtLight:"#a58b66",wood:"#6f4a2b",woodDark:"#3d291b",woodLight:"#9a6a3d",plaster:"#cdb98a",plasterLight:"#ddcb9d",stone:"#8b887b",stoneDark:"#5f5d55",roof:"#5a3224",roof2:"#70402c",thatch:"#a88b58",iron:"#3f4444",window:"#f4c66e",crop:"#d7c85f"}}
  hash(x,y,s=0){let n=(x*73856093)^(y*19349663)^(s*83492791);n=(n^(n>>>13))*1274126177;return((n^(n>>>16))>>>0)/4294967295}
- terrainTile(x,y,claimed){let c=this.ctx,T=this.T,h=this.hash(x,y),base=this.palette.grass[Math.floor(h*this.palette.grass.length)%this.palette.grass.length];c.fillStyle=base;c.fillRect(x*T,y*T,T,T);let d=this.hash(x,y,4);if(d<.16){c.fillStyle="#526e3b88";for(let i=0;i<3;i++){let px=x*T+10+this.hash(x,y,10+i)*44,py=y*T+12+this.hash(x,y,20+i)*42;c.fillRect(px,py,2,5)}}if(d>.82){c.fillStyle="#8d8a7355";c.beginPath();c.arc(x*T+14+this.hash(x,y,30)*34,y*T+18+this.hash(x,y,31)*28,2.2,0,7);c.fill()}if(claimed){c.fillStyle="#d8c58a0b";c.fillRect(x*T,y*T,T,T)}else if(d<.09){c.fillStyle="#425c3480";c.beginPath();c.arc(x*T+18,y*T+23,7,0,7);c.fill()}}
+ /* Seasonal ground palettes. Cached per season index so the lookup costs
+    nothing across the ~1100 tiles drawn each frame at minimum zoom. */
+ seasonPalette(){
+  let i=this.game.clock?.seasonIndex||0;
+  if(this._spCache&&this._spIndex===i)return this._spCache;
+  const P=[
+   {grass:["#66803f","#6d8846","#74904d","#5f7a3a"],blade:"#4f6d2f99",pebble:"#8d8a7355",bush:"#425c3480",flower:"#e8d55fcc",flower2:"#d9799fcc",litter:null},
+   {grass:["#6f8a45","#78924c","#809a52","#688340"],blade:"#58743399",pebble:"#96927b55",bush:"#40632c80",flower:"#f0dc6acc",flower2:"#e5b84ccc",litter:null},
+   {grass:["#87823f","#8f8543","#7d7738","#96874a"],blade:"#6f653099",pebble:"#8f897455",bush:"#6b5c2c80",flower:null,flower2:null,litter:"#c4762fbb"},
+   {grass:["#8e9a92","#98a49c","#a4afa7","#879389"],blade:"#7a867e99",pebble:"#9aa0a255",bush:"#6d7a7280",flower:null,flower2:null,litter:"#eef4f6cc"}
+  ];
+  this._spIndex=i;this._spCache=P[i]||P[0];return this._spCache;
+ }
+ /* Ground detail is invisible below ~half zoom, so it is skipped entirely
+    there. Above that, density follows the graphics quality tier. */
+ detailDensity(){let z=this.game.camera?.zoom||1;if(z<.5)return 0;return this.game.quality?.get("decor")??1}
+ terrainTile(x,y,claimed){
+  let c=this.ctx,T=this.T,p=this.seasonPalette(),h=this.hash(x,y),
+      base=p.grass[Math.floor(h*p.grass.length)%p.grass.length];
+  c.fillStyle=base;c.fillRect(x*T,y*T,T,T);
+  let q=this.detailDensity();
+  if(q>0){
+   let d=this.hash(x,y,4);
+   if(d<.16*q){c.fillStyle=p.blade;for(let i=0;i<3;i++){let px=x*T+10+this.hash(x,y,10+i)*44,py=y*T+12+this.hash(x,y,20+i)*42;c.fillRect(px,py,2,5)}}
+   if(d>1-.18*q){c.fillStyle=p.pebble;c.beginPath();c.arc(x*T+14+this.hash(x,y,30)*34,y*T+18+this.hash(x,y,31)*28,2.2,0,7);c.fill()}
+   if(p.flower&&d>.42&&d<.42+.09*q){let f=this.hash(x,y,40);c.fillStyle=f>.5?p.flower:p.flower2;for(let i=0;i<2;i++){c.beginPath();c.arc(x*T+16+this.hash(x,y,50+i)*36,y*T+16+this.hash(x,y,60+i)*36,1.9,0,7);c.fill()}}
+   if(p.litter&&d>.24&&d<.24+.14*q){c.fillStyle=p.litter;for(let i=0;i<3;i++){let px=x*T+8+this.hash(x,y,70+i)*46,py=y*T+10+this.hash(x,y,80+i)*44;c.fillRect(px,py,3,2)}}
+  }
+  if(claimed){c.fillStyle="#d8c58a0b";c.fillRect(x*T,y*T,T,T)}
+  else if(q>0&&this.hash(x,y,4)<.09*q){c.fillStyle=p.bush;c.beginPath();c.arc(x*T+18,y*T+23,7,0,7);c.fill()}
+ }
  claimedBounds(){let c=this.ctx,T=this.T;c.save();c.lineWidth=2;c.strokeStyle="#e3cf8f55";for(let r of this.game.expansion.claimedRects||[]){c.strokeRect(r.x*T+3,r.y*T+3,r.w*T-6,r.h*T-6);let pts=[[r.x*T+7,r.y*T+7],[(r.x+r.w)*T-7,r.y*T+7],[r.x*T+7,(r.y+r.h)*T-7],[(r.x+r.w)*T-7,(r.y+r.h)*T-7]];c.fillStyle="#7a5b35";for(let [px,py] of pts){c.fillRect(px-2,py-6,4,12);c.fillStyle="#d8c58a";c.fillRect(px-1,py-7,2,4);c.fillStyle="#7a5b35"}}c.restore()}
  frontier(){let p=this.game.expansion.preview;if(!p)return;let c=this.ctx,T=this.T;c.save();c.strokeStyle="#e9d98999";c.lineWidth=2;c.setLineDash([10,8]);c.strokeRect(p.x*T+2,p.y*T+2,p.w*T-4,p.h*T-4);c.setLineDash([]);let label=this.game.expansion.activeRegion()?.name||"Frontier",cx=(p.x+p.w/2)*T,ly=p.y*T-16;c.font="bold 16px Georgia";c.textAlign="center";let tw=c.measureText(label).width+20;c.fillStyle="#2b241bcc";c.fillRect(cx-tw/2,ly-16,tw,23);c.strokeStyle="#d8c58a99";c.strokeRect(cx-tw/2,ly-16,tw,23);c.fillStyle="#f0dfa8";c.fillText(label,cx,ly);c.restore()}
  shadow(x,y,w,h){let c=this.ctx;c.fillStyle="#26302128";c.beginPath();c.ellipse(x+w*.53,y+h*.82,w*.42,h*.16,0,0,7);c.fill()}
