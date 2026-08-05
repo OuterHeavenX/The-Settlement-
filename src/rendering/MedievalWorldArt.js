@@ -35,7 +35,20 @@ Settlement.MedievalWorldArt=class{
  claimedBounds(){let c=this.ctx,T=this.T;c.save();c.lineWidth=2;c.strokeStyle="#e3cf8f55";for(let r of this.game.expansion.claimedRects||[]){c.strokeRect(r.x*T+3,r.y*T+3,r.w*T-6,r.h*T-6);let pts=[[r.x*T+7,r.y*T+7],[(r.x+r.w)*T-7,r.y*T+7],[r.x*T+7,(r.y+r.h)*T-7],[(r.x+r.w)*T-7,(r.y+r.h)*T-7]];c.fillStyle="#7a5b35";for(let [px,py] of pts){c.fillRect(px-2,py-6,4,12);c.fillStyle="#d8c58a";c.fillRect(px-1,py-7,2,4);c.fillStyle="#7a5b35"}}c.restore()}
  /* Frontier marker: surveyor's stakes and a banner rather than a debug box.
     Turns green once every claim requirement is satisfied. */
+ /* Newly claimed squares flash in, grid-aligned, then settle. */
+ claimFlash(){
+  let lc=this.game.expansion.lastClaim;if(!lc)return;
+  let c=this.ctx,T=this.T,k=Math.min(1,lc.t/2.2),grow=Math.min(1,k*2.4),fade=1-Math.max(0,(k-.5)/.5),
+      r=lc.rect,cx=(r.x+r.w/2)*T,cy=(r.y+r.h/2)*T,w=r.w*T*grow,h=r.h*T*grow;
+  c.save();
+  c.globalAlpha=.5*fade;c.fillStyle="#cdf0a6";c.fillRect(cx-w/2,cy-h/2,w,h);
+  c.globalAlpha=fade;c.strokeStyle="#eafbd6";c.lineWidth=3;c.strokeRect(cx-w/2,cy-h/2,w,h);
+  c.globalAlpha=1;c.fillStyle="#eafbd6";c.font="bold 18px Georgia";c.textAlign="center";
+  if(fade>0){c.globalAlpha=fade;c.fillText("NEW TERRITORY SECURED",cx,r.y*T-14)}
+  c.restore();
+ }
  frontier(){
+  this.claimFlash();
   let ex=this.game.expansion,p=ex.preview;if(!p)return;
   let c=this.ctx,T=this.T,t=this.game.juice?.time||0,
       ready=false;
