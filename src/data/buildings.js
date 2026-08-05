@@ -16,11 +16,5 @@ Settlement.BuildingDefs={
  road:{id:"road",name:"Dirt Path",category:"Roads",icon:"🛤️",footprint:[1,1],cost:{gold:1},buildTime:.2,road:true,xpReward:0,requiredTownLevel:2},
  mill:{id:"mill",name:"Mill",category:"Production",icon:"⚙️",footprint:[2,2],cost:{wood:95,stone:45,gold:150},buildTime:16,workers:1,recipe:"millFlour",xpReward:75,requiredTownLevel:3},
  bakery:{id:"bakery",name:"Bakery",category:"Production",icon:"🥖",footprint:[2,2],cost:{wood:110,stone:55,gold:190},buildTime:18,workers:1,recipe:"bakeBread",xpReward:90,requiredTownLevel:4},
- mainHall:{id:"mainHall",name:"Main Hall",category:"Civic",icon:"🏛️",footprint:[4,4],cost:{wood:320,stone:180,gold:600},buildTime:45,xpReward:250,requiredTownLevel:3,storage:150,unique:true,levels:[
-  {level:1,name:"Timber Hall",storage:150},
-  {level:2,name:"Reinforced Hall",requiredTownLevel:5,buildTime:90,cost:{wood:600,stone:400,cutStone:60,gold:1400},xpReward:400,storage:320},
-  {level:3,name:"Stone Civic Hall",requiredTownLevel:8,buildTime:150,cost:{wood:1100,stone:900,cutStone:180,clay:120,gold:3200},xpReward:750,storage:560},
-  {level:4,name:"Manor Hall",requiredTownLevel:11,buildTime:240,cost:{wood:2000,stone:1700,cutStone:400,clay:300,gold:6800},xpReward:1300,storage:900},
-  {level:5,name:"Seat of Government",requiredTownLevel:14,buildTime:360,cost:{wood:3600,stone:3000,cutStone:800,clay:600,gold:14000},xpReward:2400,storage:1400}
- ]}
+ mainHall:{id:"mainHall",name:"Main Hall",category:"Civic",icon:"🏛️",footprint:[4,4],cost:{wood:320,stone:180,gold:600},buildTime:45,xpReward:250,requiredTownLevel:3,storage:150,unique:true}
 };

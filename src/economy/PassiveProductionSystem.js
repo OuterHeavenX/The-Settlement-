@@ -1,6 +1,6 @@
 Settlement.PassiveProductionSystem=class{
  constructor(game){this.game=game}
- definition(b){return Settlement.BuildingDefs[b.type]?.production||null}
+ definition(b){let d=Settlement.BuildingDefs[b.type];if(!d)return null;let lv=Array.isArray(d.levels)?d.levels.find(x=>x.level===(b.level||1)):null;return (lv&&lv.production)||d.production||null}
  state(b){if(!b.passiveProduction)b.passiveProduction={progress:{}};if(!b.passiveProduction.progress)b.passiveProduction.progress={};return b.passiveProduction}
  ratePerDay(b,k){let d=this.definition(b);return d?(Number(d[k])||0)*Math.max(0,b.workers||0):0}
  status(b){let d=this.definition(b);if(!d)return{state:"NONE",label:"No passive production"};if(!b.complete)return{state:"CONSTRUCTION",label:"Under construction"};if((b.workers||0)<=0)return{state:"NEEDS_WORKER",label:"Needs worker"};if(this.game.resources.remainingCapacity()<=0)return{state:"STORAGE_FULL",label:"Storage full"};let s=this.state(b),first=Object.keys(d)[0],perDay=this.ratePerDay(b,first),frac=(s.progress[first]||0)%1,seconds=perDay>0?(1-frac)*Settlement.Config.DAY_SECONDS/perDay:Infinity;return{state:"WORKING",label:"Working",resource:first,perDay,progress:frac,secondsToNext:seconds}}
