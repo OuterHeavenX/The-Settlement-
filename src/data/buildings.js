@@ -9,7 +9,7 @@ Settlement.BuildingDefs={
  quarry:{id:"quarry",name:"Stone Quarry",category:"Production",icon:"⛏️",footprint:[3,2],cost:{wood:55,gold:95},buildTime:11,workers:1,production:{stone:8},xpReward:55,requiredTownLevel:2},
  mason:{id:"mason",name:"Mason's Yard",category:"Production",icon:"🧱",footprint:[2,2],cost:{wood:80,stone:30,gold:135},buildTime:14,workers:1,recipe:"cutStone",manualRecipe:true,xpReward:70,requiredTownLevel:4},
  warehouse:{id:"warehouse",name:"Warehouse",category:"Civic",icon:"📦",footprint:[2,2],cost:{wood:60,stone:25,gold:90},buildTime:10,storage:400,xpReward:45,requiredTownLevel:2},
- archery:{id:"archery",name:"Archery Tower",category:"Military",icon:"🏹",footprint:[1,1],cost:{wood:80,stone:35,gold:100},buildTime:12,workers:1,range:5,damage:12,fireRate:1.2,xpReward:60,requiredTownLevel:3},
+ archery:{id:"archery",name:"Archery Tower",category:"Military",icon:"🏹",footprint:[1,1],cost:{wood:80,stone:35,gold:100},buildTime:12,workers:1,range:5,damage:12,fireRate:1.2,xpReward:60,requiredTownLevel:3,claimsTerritory:true},
  wall:{id:"wall",name:"Palisade Wall",category:"Military",icon:"🪵",footprint:[1,1],cost:{wood:6},buildTime:1.2,wall:true,xpReward:2},
  gate:{id:"gate",name:"Wooden Gate",category:"Military",icon:"🚪",footprint:[1,1],cost:{wood:20,stone:4,gold:10},buildTime:3,gate:true,wall:true,xpReward:8},
  training:{id:"training",name:"Training Yard",category:"Military",icon:"⚔️",footprint:[2,2],cost:{wood:90,stone:30,gold:140},buildTime:14,workers:1,xpReward:70,requiredTownLevel:2},

@@ -280,6 +280,31 @@ async function run() {
   check('TERRITORY PERMANENT', expo.afterDemolish === expo.afterMilestone,
     `tower demolished, land held stays ${expo.afterDemolish} tiles`);
 
+  // territory must be visually distinguishable, or players cannot tell where they may build
+  const vis = await G(() => {
+    const g = window.game, cv = document.querySelector('#game-canvas'), ctx = cv.getContext('2d');
+    g.clock.t = 12 / 24 * Settlement.Config.DAY_SECONDS;
+    const r0 = g.expansion.claimedRects[0];
+    g.camera.x = g.camera.tx = (r0.x + r0.w / 2) * 64; g.camera.y = g.camera.ty = (r0.y + r0.h / 2) * 64;
+    g.camera.zoom = g.camera.tzoom = 0.82;
+    g.juice.particles.length = 0; g.juice.ambient.length = 0;
+    g.renderer.draw();
+    const w2s = (wx, wy) => ({ x: (wx - g.camera.x) * g.camera.zoom * g.renderer.dpr + cv.width / 2, y: (wy - g.camera.y) * g.camera.zoom * g.renderer.dpr + cv.height / 2 });
+    const px = (tx, ty) => { const s = w2s((tx + .5) * 64, (ty + .5) * 64); const d = ctx.getImageData(Math.round(s.x), Math.round(s.y), 1, 1).data; return [d[0], d[1], d[2]]; };
+    const inside = px(r0.x + 1, r0.y + 1), outside = px(r0.x + 1, r0.y + r0.h + 3);
+    return { diff: Math.abs(inside[0] - outside[0]) + Math.abs(inside[1] - outside[1]) + Math.abs(inside[2] - outside[2]) };
+  });
+  check('TERRITORY IS VISIBLE', vis.diff > 45, `claimed vs wilderness differ by ${vis.diff}/765 RGB`);
+
+  const msg = await G(() => {
+    const g = window.game, r0 = g.expansion.claimedRects[0], o = {};
+    g.placement.start('cottage'); g.placement.setPreviewTile(r0.x + r0.w + 6, r0.y); o.cottage = g.placement.lastValidation.reason; g.placement.cancel();
+    g.placement.start('archery'); g.placement.setPreviewTile(r0.x + r0.w + 8, r0.y); o.tower = g.placement.lastValidation.reason; g.placement.cancel();
+    return o;
+  });
+  check('REFUSAL EXPLAINS ITSELF', /ARCHERY TOWER/.test(msg.cottage) && /BORDER/.test(msg.tower),
+    `"${msg.cottage}" / "${msg.tower}"`);
+
   // ---------- levels, move, delete ----------
   const lvl = await G(() => {
     const D = Settlement.BuildingDefs, ids = Object.keys(D);
