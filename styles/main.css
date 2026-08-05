@@ -15,3 +15,5 @@ button{font:inherit}
 .production-status{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid #76552e;background:#d8c08d;margin:2px 0 8px}.production-status.working{background:#b9cb8d}.production-status.needs_worker,.production-status.storage_full{background:#d5ad83}.passive-output{margin:10px 0;padding:9px 10px;border:1px solid #89663b;border-radius:9px;background:#f0ddb7aa}.passive-output h3{margin:0 0 5px}.production-help{font-size:12px;opacity:.8}
 .hidden{display:none!important}
 @media(prefers-reduced-motion:reduce){.wood-button,.juice-celebration{transition:none!important}.juice-celebration{transform:translate(-50%,0)}}
+
+#game-canvas-3d{position:absolute;inset:0;width:100%;height:100%;display:block;background:#10130f}

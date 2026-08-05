@@ -32,6 +32,11 @@ const PHONE = { ...devices['Pixel 5'], viewport: { width: 390, height: 844 }, is
 async function run() {
   const browser = await chromium.launch(EXEC ? { executablePath: EXEC } : {});
   const ctx = await browser.newContext(PHONE);
+  // The matrix below validates the Canvas2D renderer (it reads canvas pixels),
+  // so pin it. The 3D layer is covered by its own section at the end.
+  await ctx.addInitScript(() => {
+    try { localStorage.setItem("theSettlement.settings.v1", JSON.stringify({ renderer3d: false })); } catch (e) { }
+  });
   const page = await ctx.newPage();
 
   const errors = [];
@@ -435,6 +440,63 @@ async function run() {
 
   check('CONSOLE', errors.length === 0, errors.length ? [...new Set(errors)].slice(0, 4).join(' | ') : 'clean');
   check('GAME LOOP ALIVE', await alive());
+
+  // ---------- 3D presentation layer ----------
+  const ctx3 = await browser.newContext(PHONE);
+  await ctx3.addInitScript(() => {
+    try { localStorage.setItem("theSettlement.settings.v1", JSON.stringify({ renderer3d: true })); } catch (e) { }
+  });
+  const p3 = await ctx3.newPage();
+  const err3 = [];
+  p3.on('pageerror', e => err3.push(e.message.split('\n')[0]));
+  p3.on('console', m => { const u = (m.location() && m.location().url) || ''; if (m.type() === 'error' && !/favicon/.test(u)) err3.push('console: ' + m.text().slice(0, 140)); });
+  await p3.goto(BASE_URL, { waitUntil: 'load' });
+  await p3.waitForTimeout(2600);
+  const on = await p3.evaluate(() => ({ supported: Settlement.renderer3dSupported, enabled: Settlement.renderer3dEnabled, world: !!window.game.world3d }));
+  check('3D RENDERER STARTS', on.supported && on.enabled && on.world, `supported=${on.supported} active=${on.enabled}`);
+
+  if (on.enabled) {
+    await p3.click('#start'); await p3.waitForTimeout(900);
+    const built = await p3.evaluate(() => {
+      const g = window.game, w = g.world3d;
+      g.xp.level = 15; g.resources.v = { gold: 9e6, wood: 9e6, stone: 9e6, food: 9e4, wheat: 9e3, flour: 9e3, bread: 9e3, clay: 9e5, cutStone: 9e5 };
+      const mk = (t, x, y, lv) => { const b = g.buildings.create(t, x, y); b.complete = true; b.progress = 1; if (lv) b.level = lv; const d = Settlement.BuildingDefs[t]; if (d.workers) b.workers = d.workers; return b; };
+      const keep = mk('cottage', 128, 128); mk('mainHall', 130, 131); mk('archery', 133, 128); mk('wall', 127, 133); mk('road', 126, 129); mk('farm', 124, 128);
+      document.querySelectorAll('.modal-backdrop').forEach(m => m.remove());
+      g.renderer.draw();
+      const before = w.meshes.size;
+      // upgrade rebuilds the mesh, demolish must leave no ghost
+      keep.level = 10; g.renderer.draw();
+      const upgraded = w.sig.get(keep.id).includes('|10|');
+      g.buildings.demolish(keep.id); g.renderer.draw();
+      return { before, after: w.meshes.size, upgraded, ghost: w.meshes.has(keep.id), tris: w.renderer.info.render.triangles };
+    });
+    check('3D MESH LIFECYCLE', built.after === built.before - 1 && built.upgraded && !built.ghost,
+      `${built.before} meshes -> ${built.after} after demolish, upgrade rebuilt, no ghost, ${built.tris} tris`);
+
+    const pick = await p3.evaluate(() => {
+      const w = window.game.world3d, out = [];
+      for (const [tx, ty] of [[128, 128], [132, 130], [125, 134]]) {
+        const s = w.worldToScreen((tx + .5) * 64, (ty + .5) * 64);
+        const back = w.screenToWorld(s.x, s.y);
+        out.push(Math.floor(back.x / 64) === tx && Math.floor(back.y / 64) === ty);
+      }
+      return out;
+    });
+    check('3D PICKING ACCURACY', pick.every(Boolean), `${pick.filter(Boolean).length}/3 tiles round-trip exactly`);
+
+    const dn = await p3.evaluate(() => {
+      const w = window.game.world3d, out = {};
+      window.game.clock.t = 13 / 24 * Settlement.Config.DAY_SECONDS; w.render(); out.daySun = +w.sun.intensity.toFixed(2);
+      window.game.clock.t = 23 / 24 * Settlement.Config.DAY_SECONDS; w.render(); out.nightSun = +w.sun.intensity.toFixed(2);
+      out.nightFloorOK = out.nightSun >= 0.8;
+      return out;
+    });
+    check('3D DAY/NIGHT', dn.daySun > dn.nightSun && dn.nightFloorOK,
+      `sun ${dn.daySun} day / ${dn.nightSun} night (night keeps a readable floor)`);
+    check('3D CONSOLE', err3.length === 0, err3.length ? [...new Set(err3)].slice(0, 3).join(' | ') : 'clean');
+  }
+  await ctx3.close();
 
   await browser.close();
 
