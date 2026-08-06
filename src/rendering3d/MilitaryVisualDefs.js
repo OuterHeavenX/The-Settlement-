@@ -1,5 +1,6 @@
 /* Presentation-only Military & Fortification visual definitions.
  * No range, damage, fire rate, security, guard, claim, cost, timer or save data belongs here.
+ * Deployment touch: keeps the visual checkpoint behavior-identical while giving Pages a fresh commit.
  */
 export const MilitaryVisualDefs={
  archery:{finished:true,family:"gothic-watchtower",props:["battlements","arrowSlits","banner","lantern"]},
