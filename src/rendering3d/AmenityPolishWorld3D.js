@@ -10,7 +10,7 @@ export class AmenityPolishWorld3D extends PolishWorld3D{
  add(g,geo,mat,x,y,z,rotX=0,rotY=0,rotZ=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rotX,rotY,rotZ);m.castShadow=this.rich;m.receiveShadow=this.rich;g.add(m);return m}
  makeAmenity(b){
   const d=Settlement.BuildingDefs[b.type],v=d.amenityMeta.visualType,g=new THREE.Group(),w=b.w*T,h=b.h*T;
-  const stone=this.mat("amenityStone",0x706d68),stoneDark=this.mat("amenityStoneDark",0x46464a),wood=this.mat("amenityWood",0x3f2d24),wood2=this.mat("amenityWood2",0x5a3c2b),iron=this.mat("amenityIron",0x25272b,{metalness:.32}),leaf=this.mat("amenityLeaf",0x3c4c35),leaf2=this.mat("amenityLeaf2",0x506044),flower=this.mat("amenityFlower",0x7d465b),water=this.mat("amenityWater",0x345363,{roughness:.28,metalness:.12}),warm=this.mat("amenityWarm",0x9b6539,{emissive:0xffa34f,ei:1.9}),roof=this.mat("amenityRoof",0x292e34),cloth=this.mat("amenityCloth",0x65283a);
+  const stone=this.mat("amenityStone",0x706d68),stoneDark=this.mat("amenityStoneDark",0x46464a),wood=this.mat("amenityWood",0x3f2d24),iron=this.mat("amenityIron",0x25272b,{metalness:.32}),leaf=this.mat("amenityLeaf",0x3c4c35),leaf2=this.mat("amenityLeaf2",0x506044),flower=this.mat("amenityFlower",0x7d465b),water=this.mat("amenityWater",0x345363,{roughness:.28,metalness:.12}),warm=this.mat("amenityWarm",0x9b6539,{emissive:0xffa34f,ei:1.9}),roof=this.mat("amenityRoof",0x292e34),cloth=this.mat("amenityCloth",0x65283a);
   const box=(W,H,D,M,x,y,z)=>this.add(g,this.box(W,H,D),M,x,y,z),tree=(x,z,s=1)=>{box(6*s,26*s,6*s,wood,x,13*s,z);this.add(g,this.sph(18*s),leaf,x,35*s,z);this.add(g,this.sph(13*s),leaf2,x-11*s,29*s,z+3*s)};
   switch(v){
    case"lamp":box(4,46,4,iron,0,23,0);box(16,4,4,iron,6,46,0);box(13,16,13,warm,12,38,0);this.add(g,this.cyl(10,13,4),stoneDark,0,2,0);break;
@@ -40,13 +40,13 @@ export class AmenityPolishWorld3D extends PolishWorld3D{
   for(const b of this.game.buildings.list){if(!b.complete||!Settlement.BuildingDefs[b.type]?.amenity)continue;live.add(b.id);const base=this.meshes.get(b.id);if(base)base.visible=false;const sig=`${b.type}|${b.x}|${b.y}|${b.w}|${b.h}`;if(this.amenitySig.get(b.id)===sig)continue;const old=this.amenityMeshes.get(b.id);if(old)this.scene.remove(old);const g=this.makeAmenity(b);this.scene.add(g);this.amenityMeshes.set(b.id,g);this.amenitySig.set(b.id,sig)}
   for(const[id,g]of this.amenityMeshes)if(!live.has(id)){this.scene.remove(g);this.amenityMeshes.delete(id);this.amenitySig.delete(id)}
  }
- syncLivingCitizens(now){super.syncLivingCitizens(now);for(const c of this.game.citizens.list){const e=this.livingSprites?.get(c.id),p=this.game.amenities?.presentation(c);if(!e?.group)continue;e.group.scale.y=p?.phase==="using"&&(p.kind==="sit"||p.kind==="game")?.72:1;if(p?.phase==="using"){e.group.position.x=p.x;e.group.position.z=p.y}}}
+ syncLivingCitizens(now){super.syncLivingCitizens(now);for(const c of this.game.citizens.list){const e=this.livingSprites?.get(c.id),p=this.game.amenities?.presentation(c);if(!e?.group)continue;e.group.scale.y=(p?.phase==="using"&&(p.kind==="sit"||p.kind==="game"))?.72:1;if(p?.phase==="using"){e.group.position.x=p.x;e.group.position.z=p.y}}}
  updateAmenityLights(){
   const tier=this.game.quality?.tier||"MEDIUM",budget={LOW:2,MEDIUM:4,HIGH:7,ULTRA:10}[tier]||4,phase=this.live?.phase?.(),night=phase==="NIGHT"||phase==="DUSK"||phase==="DAWN";
   const cx=this.game.camera.x,cz=this.game.camera.y,glows=[];if(night)for(const b of this.game.buildings.list){const m=Settlement.BuildingDefs[b.type]?.amenityMeta;if(!b.complete||!m?.nightRelevant)continue;const x=(b.x+b.w/2)*T,z=(b.y+b.h/2)*T;glows.push({x,z,d:(x-cx)*(x-cx)+(z-cz)*(z-cz),type:m.visualType})}glows.sort((a,b)=>a.d-b.d);
   for(let i=0;i<this.amenityLights.length;i++){const l=this.amenityLights[i],a=glows[i];if(i>=budget||!a){l.visible=false;continue}l.visible=true;l.position.set(a.x,a.type==="lamp"?72:a.type==="gazebo"?58:35,a.z);l.intensity=a.type==="brazier"?1.5:a.type==="lamp"?1.15:.75;l.distance=a.type==="lamp"?250:210}
  }
- animateAmenities(){const t=performance.now()/1000;for(const g of this.amenityMeshes.values())g.traverse(o=>{if(o.userData?.water){o.position.y+=Math.sin(t*2+g.userData.buildingId)*.02}else if(o.userData?.flame){o.scale.y=.85+Math.sin(t*8+g.userData.buildingId)*.12}else if(o.userData?.banner){o.rotation.y=Math.sin(t*1.6+g.userData.buildingId)*.08}})}
+ animateAmenities(){const t=performance.now()/1000;for(const g of this.amenityMeshes.values())g.traverse(o=>{if(o.userData?.water){if(o.userData.baseY===undefined)o.userData.baseY=o.position.y;o.position.y=o.userData.baseY+Math.sin(t*2+g.userData.buildingId)*.18}else if(o.userData?.flame){o.scale.y=.85+Math.sin(t*8+g.userData.buildingId)*.12}else if(o.userData?.banner){o.rotation.y=Math.sin(t*1.6+g.userData.buildingId)*.08}})}
  syncTime(){super.syncTime();this.updateAmenityLights()}
  render(){this.animateAmenities();return super.render()}
 }
