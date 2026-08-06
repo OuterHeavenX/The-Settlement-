@@ -11,7 +11,18 @@ function webgpuOK(){return!!navigator.gpu}
 function wantsWebGPU(){try{const q=new URLSearchParams(location.search);return q.get("webgpu")==="1"||q.get("renderer")==="webgpu"}catch(e){return false}}
 async function whenGame(){for(let i=0;i<400;i++){if(window.game)return window.game;await new Promise(r=>setTimeout(r,25))}return null}
 function makeCanvas(shell,old){const c=document.createElement("canvas");c.id="game-canvas-3d";c.style.pointerEvents="auto";shell.insertBefore(c,old);return c}
-async function startWebGL(game,canvas){let PolishWorld3D;({PolishWorld3D}=await import("./PolishWorld3D.js"));const world=new PolishWorld3D(game,canvas);return(await Promise.resolve(world.init()))?world:null}
+async function startWebGL(game,canvas){
+ try{
+  const{PolishWorld3D}=await import("./PolishWorld3D.js");
+  const world=new PolishWorld3D(game,canvas);
+  if(await Promise.resolve(world.init()))return world;
+ }catch(e){console.error("The Settlement: polish 3D layer failed; restoring proven living-world renderer",e)}
+ try{
+  const{LivingWorldCheckpointWorld3D}=await import("./LivingWorldCheckpointWorld3D.js");
+  const fallback=new LivingWorldCheckpointWorld3D(game,canvas);
+  return(await Promise.resolve(fallback.init()))?fallback:null;
+ }catch(e){console.error("The Settlement: fallback living-world 3D renderer also failed",e);return null}
+}
 async function startWebGPU(game,canvas){if(!webgpuOK())return null;const{WebGPUVerticalSlice}=await import("./WebGPUVerticalSlice.js");const world=new WebGPUVerticalSlice(game,canvas);return(await Promise.resolve(world.init()))?world:null}
 async function boot(){
  const game=await whenGame();if(!game){console.warn("The Settlement: game never appeared, optional 3D layer not started");return}
