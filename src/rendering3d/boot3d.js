@@ -2,12 +2,6 @@
  * Stable Canvas2D remains default and gameplay authority.
  * Experimental WebGPU is explicit opt-in (?webgpu=1); failure gets a fresh
  * canvas and falls back to the existing vendored WebGL renderer.
- *
- * PLACEMENT SAFETY HOTFIX:
- * WebGL boots through the last known-good PolishWorld3D path while the
- * Amenities presentation layer is isolated. This preserves the proven 3D
- * camera/input/placement handoff and prevents a presentation-only feature from
- * blocking BUILD / CONFIRM / CANCEL.
  */
 const KEY="theSettlement.settings.v1";
 function pref(){try{const s=JSON.parse(localStorage.getItem(KEY)||"{}");return s.renderer3d===true}catch(e){return false}}
@@ -19,12 +13,12 @@ async function whenGame(){for(let i=0;i<400;i++){if(window.game)return window.ga
 function makeCanvas(shell,old){const c=document.createElement("canvas");c.id="game-canvas-3d";c.style.pointerEvents="auto";shell.insertBefore(c,old);return c}
 async function startWebGL(game,canvas){
  try{
-  const{PolishWorld3D}=await import("./PolishWorld3D.js?v=0.11.0-placement-safety1");
-  const world=new PolishWorld3D(game,canvas);
+  const{AmenityPolishWorld3D}=await import("./AmenityPolishWorld3D.js");
+  const world=new AmenityPolishWorld3D(game,canvas);
   if(await Promise.resolve(world.init()))return world;
- }catch(e){console.error("The Settlement: polish 3D layer failed; restoring proven living-world renderer",e)}
+ }catch(e){console.error("The Settlement: amenity polish 3D layer failed; restoring proven living-world renderer",e)}
  try{
-  const{LivingWorldCheckpointWorld3D}=await import("./LivingWorldCheckpointWorld3D.js?v=0.11.0-placement-safety1");
+  const{LivingWorldCheckpointWorld3D}=await import("./LivingWorldCheckpointWorld3D.js");
   const fallback=new LivingWorldCheckpointWorld3D(game,canvas);
   return(await Promise.resolve(fallback.init()))?fallback:null;
  }catch(e){console.error("The Settlement: fallback living-world 3D renderer also failed",e);return null}
@@ -48,6 +42,6 @@ async function boot(){
  const baseResize=game.renderer.resize.bind(game.renderer);game.renderer.resize=()=>{baseResize();world.resize()};
  game.renderer.draw=()=>{try{world.render()}catch(e){console.error("The Settlement: Three.js render exception",e)}};
  game.bus.on("quality:changed",()=>{world.applyQuality?.();world.resize()});addEventListener("resize",()=>world.resize());world.resize();
- console.info(`The Settlement: optional Three.js ${backend.toUpperCase()} placement-safe living world presentation active`);
+ console.info(`The Settlement: optional Three.js ${backend.toUpperCase()} amenities living-world presentation active`);
 }
 boot();

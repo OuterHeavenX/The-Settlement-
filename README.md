@@ -171,4 +171,3 @@ Do not convert this build yet. Once this vertical slice is approved, the existin
 <!-- deployment refresh: living-world-stabilization-mason-showcase -->
 <!-- deployment refresh: bright-night-mason-batching-citizen-animation -->
 <!-- deployment refresh: amenities-social-life -->
-<!-- deployment refresh: amenities-bespoke-3d-hotfix -->
