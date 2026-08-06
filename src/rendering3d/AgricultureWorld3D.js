@@ -81,12 +81,19 @@ export class AgricultureWorld3D extends ResidentialDistrictWorld3D{
   };
   this.tendedMarkers=mk(new THREE.BoxGeometry(3,22,3),new THREE.MeshLambertMaterial({color:0x7a6848}),MAX_TENDED_MARKERS);
  }
+ agricultureSignature(farms){
+  return farms.map(b=>{
+   const p=this.game.farms?.plots?.get(b.id);
+   return b.id+":"+(p?.crop||"empty")+":"+growthVisualStage(p)+":"+(p?.tended?1:0)+":"+(b.level||1);
+  }).join("|");
+ }
  syncAgricultureInstances(){
-  if(!this._agriDirty)return;
-  this._agriDirty=false;
+  const farms=this.game.buildings.list.filter(b=>b?.complete&&b.type==="farm");
+  const sig=this.agricultureSignature(farms);
+  if(!this._agriDirty&&sig===this._agriSig)return;
+  this._agriDirty=false;this._agriSig=sig;
   const counts={wheat:0,carrots:0,potatoes:0,cabbage:0,flax:0};
   let tended=0;
-  const farms=this.game.buildings.list.filter(b=>b?.complete&&b.type==="farm");
   for(const b of farms){
    const p=this.game.farms?.plots?.get(b.id);
    const stage=growthVisualStage(p);
@@ -96,8 +103,8 @@ export class AgricultureWorld3D extends ResidentialDistrictWorld3D{
    const scale=stage===1?.35:stage===2?.58:stage===3?.82:1;
    for(let i=0;i<n&&counts[crop]<MAX_CROP_INSTANCES;i++){
     const row=i%4,col=Math.floor(i/4),jx=((v.seed>>>(i%16))&3)-1.5;
-    const x=(b.x+.28+row*.16)*T+jx*1.2;
-    const z=(b.y+.22+col*.19)*T+((i%2)?2:-2);
+    const x=(b.x+.25+row*((b.w-.5)/3))*T+jx*1.2;
+    const z=(b.y+.25+col*((b.h-.5)/Math.max(1,Math.ceil(n/4)-1)))*T+((i%2)?2:-2);
     this._agriM4.makeScale(scale,scale,scale);
     this._agriM4.setPosition(x,3+def.height*scale*.5,z);
     mesh.setMatrixAt(counts[crop]++,this._agriM4);
