@@ -167,3 +167,5 @@ Army contains a debug enemy spawn button.
 ## Vite
 
 Do not convert this build yet. Once this vertical slice is approved, the existing `src/` domains can be converted to ES modules and Vite without changing the data model.
+
+<!-- deployment refresh: living-world-stabilization-mason-showcase -->
