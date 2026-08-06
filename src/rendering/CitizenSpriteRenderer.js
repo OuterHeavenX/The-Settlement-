@@ -28,15 +28,20 @@ Settlement.CitizenSpriteRenderer=class{
  draw(c,v){
   let def=this.manifestFor(c);if(!def)return false;
   let m=this.motionFor(c);
-  // Uploaded packs have no proven up/down frame families. Use the known-safe procedural
-  // renderer for predominantly vertical travel rather than inventing a wrong direction.
+  // Uploaded packs have no proven up/down frame families. Preserve the known-safe
+  // procedural fallback for predominantly vertical travel rather than inventing a facing.
   if(m.vertical)return false;
   let anim=this.animation(c,m,def),frames=def[anim]||def.idle;if(!frames?.length)return false;
   let ms=def.frameMs?.[anim]||140,phase=(c.id||0)*137,idx=Math.floor((performance.now()+phase)/ms)%frames.length,img=this.image(frames[idx]);
   if(!img||!img.naturalWidth||!img.naturalHeight)return false;
-  let h=def.targetHeight||46,w=img.naturalWidth/img.naturalHeight*h,x=v.x,y=v.y+v.bob,flip=m.face!==def.sourceFacing;
-  let ctx=this.ctx;ctx.save();ctx.translate(x,y);ctx.globalAlpha=.24;ctx.fillStyle="#0d0910";ctx.beginPath();ctx.ellipse(0,2,Math.max(7,w*.19),4,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
-  if(flip)ctx.scale(-1,1);ctx.drawImage(img,-w*(def.anchorX??.5),-h*(def.anchorY??.94),w,h);ctx.restore();
+  let h=Math.max(40,Math.min(48,def.targetHeight||46)),w=img.naturalWidth/img.naturalHeight*h,x=v.x,y=v.y+v.bob+1,flip=m.face!==def.sourceFacing,n=this.game.gothicWorld?.nightFactor?.()||0;
+  let ctx=this.ctx;ctx.save();ctx.translate(x,y);
+  // One cheap ellipse gives every citizen a consistent foot contact cue at every zoom.
+  ctx.globalAlpha=.18+.08*n;ctx.fillStyle="#09070b";ctx.beginPath();ctx.ellipse(0,1,Math.max(7,w*.18),3.5,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;if(flip)ctx.scale(-1,1);ctx.drawImage(img,-w*(def.anchorX??.5),-h*(def.anchorY??.97),w,h);
+  // Night readability: restrained warm lower-body response, no outlines or blur filters.
+  if(n>.08){ctx.globalCompositeOperation="source-atop";ctx.globalAlpha=.055*n;ctx.fillStyle="#e3a461";ctx.fillRect(-w*.52,-h*.52,w*1.04,h*.54)}
+  ctx.restore();
   if(this.motion.size>Math.max(96,this.game.citizens.list.length*2)){let now=performance.now();for(const[id,s]of this.motion)if(now-s.seen>30000)this.motion.delete(id)}
   return true;
  }
