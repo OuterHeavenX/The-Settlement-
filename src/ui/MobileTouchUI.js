@@ -41,12 +41,15 @@
    }
    return false;
   };
+  /* Capture is intentional. PlacementUI stops pointerdown propagation at its
+     toolbar so world gestures never see UI touches. Observing in capture phase
+     lets this bridge record the touch before that local stopPropagation runs. */
   root.addEventListener("pointerdown",e=>{
    if(e.pointerType!=="touch")return;
    const el=interactive(e.target);if(!el)return;
    starts.set(e.pointerId,{x:e.clientX,y:e.clientY,el});
-  },{passive:true});
-  root.addEventListener("pointercancel",e=>starts.delete(e.pointerId),{passive:true});
+  },{passive:true,capture:true});
+  root.addEventListener("pointercancel",e=>starts.delete(e.pointerId),{passive:true,capture:true});
   root.addEventListener("pointerup",e=>{
    if(e.pointerType!=="touch")return;
    const s=starts.get(e.pointerId);starts.delete(e.pointerId);if(!s)return;
@@ -56,7 +59,7 @@
     suppressUntil=performance.now()+700;suppressTarget=el;
     e.preventDefault();
    }
-  },{passive:false});
+  },{passive:false,capture:true});
   root.addEventListener("click",e=>{
    if(performance.now()>suppressUntil)return;
    const el=interactive(e.target);
