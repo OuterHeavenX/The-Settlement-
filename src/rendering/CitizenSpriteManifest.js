@@ -1,0 +1,61 @@
+/* Citizen sprite presentation manifest.
+ * Presentation only: no simulation/save authority lives here.
+ * Source frames were selectively copied from main/assets/citizens/.
+ */
+Settlement.CitizenSpriteManifest={
+  default:{
+    family:"vampire_sprites_01",
+    sourceFacing:"right",
+    targetHeight:46,
+    anchorX:.5,
+    anchorY:.93,
+    frameMs:{idle:185,walk:115},
+    idle:[
+      "assets/citizens/vampire_sprites_01/0_Vampire_Idle_000.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Idle_003.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Idle_006.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Idle_009.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Idle_012.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Idle_015.png"
+    ],
+    walk:[
+      "assets/citizens/vampire_sprites_01/0_Vampire_Walking_000.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Walking_004.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Walking_008.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Walking_012.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Walking_016.png",
+      "assets/citizens/vampire_sprites_01/0_Vampire_Walking_020.png"
+    ]
+  },
+  Archer:{
+    family:"archers_01",
+    sourceFacing:"right",
+    targetHeight:48,
+    anchorX:.5,
+    anchorY:.94,
+    frameMs:{idle:175,walk:105,attack:92},
+    idle:[
+      "assets/citizens/archers_01/0_Archer_Idle_000.png",
+      "assets/citizens/archers_01/0_Archer_Idle_003.png",
+      "assets/citizens/archers_01/0_Archer_Idle_006.png",
+      "assets/citizens/archers_01/0_Archer_Idle_009.png",
+      "assets/citizens/archers_01/0_Archer_Idle_012.png",
+      "assets/citizens/archers_01/0_Archer_Idle_015.png"
+    ],
+    walk:[
+      "assets/citizens/archers_01/0_Archer_Walking_000.png",
+      "assets/citizens/archers_01/0_Archer_Walking_004.png",
+      "assets/citizens/archers_01/0_Archer_Walking_008.png",
+      "assets/citizens/archers_01/0_Archer_Walking_012.png",
+      "assets/citizens/archers_01/0_Archer_Walking_016.png",
+      "assets/citizens/archers_01/0_Archer_Walking_020.png"
+    ],
+    attack:[
+      "assets/citizens/archers_01/0_Archer_Shooting_000.png",
+      "assets/citizens/archers_01/0_Archer_Shooting_002.png",
+      "assets/citizens/archers_01/0_Archer_Shooting_004.png",
+      "assets/citizens/archers_01/0_Archer_Shooting_006.png",
+      "assets/citizens/archers_01/0_Archer_Shooting_008.png"
+    ]
+  }
+};
