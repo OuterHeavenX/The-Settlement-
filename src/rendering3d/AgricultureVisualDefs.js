@@ -1,5 +1,6 @@
 /* Presentation-only Agriculture visual definitions.
  * No planting costs, yields, timers, fertility math, unlocks, XP or save data belong here.
+ * Cloudflare production checkpoint: gothic agriculture.
  */
 export const AgricultureVisualDefs={
  farm:{
