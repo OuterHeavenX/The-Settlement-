@@ -13,7 +13,7 @@ async function whenGame(){for(let i=0;i<400;i++){if(window.game)return window.ga
 function makeCanvas(shell,old){const c=document.createElement("canvas");c.id="game-canvas-3d";c.style.pointerEvents="auto";shell.insertBefore(c,old);return c}
 async function startWebGL(game,canvas){
  try{
-  const{AmenityPolishWorld3D}=await import("./AmenityPolishWorld3D.js");
+  const{AmenityPolishWorld3D}=await import("./AmenityPolishWorld3D.js?v=amenities3d-hotfix2");
   const world=new AmenityPolishWorld3D(game,canvas);
   if(await Promise.resolve(world.init()))return world;
  }catch(e){console.error("The Settlement: amenity polish 3D layer failed; restoring proven living-world renderer",e)}
