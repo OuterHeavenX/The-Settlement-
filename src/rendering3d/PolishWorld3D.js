@@ -15,8 +15,8 @@ export class PolishWorld3D extends LivingWorldCheckpointWorld3D{
   const seen=new Set();for(const def of Object.values(Settlement.CitizenSpriteManifest||{}))for(const key of["idle","walk","attack"])for(const path of def?.[key]||[])if(path&&!seen.has(path)){seen.add(path);this.spriteMaterial(path)}
  }
  spriteMotion(s){
-  let m=this._spriteMotion.get(s.id);if(!m){m={x:s.x,y:s.y,face:"right",seen:performance.now()};this._spriteMotion.set(s.id,m);return{moving:!!s.moving,face:m.face}}
-  const dx=s.x-m.x,dy=s.y-m.y,moving=Math.hypot(dx,dy)>.08||!!s.moving;if(Math.abs(dx)>.04)m.face=dx<0?"left":"right";m.x=s.x;m.y=s.y;m.seen=performance.now();return{moving,face:m.face}
+  let m=this._spriteMotion.get(s.id);if(!m){m={x:s.x,y:s.y,face:"right",seen:performance.now()};this._spriteMotion.set(s.id,m);return{moving:false,face:m.face}}
+  const dx=s.x-m.x,dy=s.y-m.y,moving=Math.hypot(dx,dy)>.08;if(Math.abs(dx)>.04)m.face=dx<0?"left":"right";m.x=s.x;m.y=s.y;m.seen=performance.now();return{moving,face:m.face}
  }
  citizenAnimation(s,def,m,now){
   if(s.job==="Archer"&&s.workplaceId&&def.attack?.length){const age=now-(this._archerShots.get(s.workplaceId)||-1e9),dur=def.attack.length*(def.frameMs?.attack||100);if(age>=0&&age<dur)return"attack"}
