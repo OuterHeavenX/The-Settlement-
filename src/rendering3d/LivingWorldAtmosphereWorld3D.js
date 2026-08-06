@@ -76,11 +76,9 @@ export class LivingWorldAtmosphereWorld3D extends MasonShowcaseWorld3D{
 
  buildLivingDoors(){this.doorRoot=new THREE.Group();this.scene.add(this.doorRoot);this.doorMat=this.mat("living-door",0x5b3f2d,{roughness:.94});this.doorGlow=this.mat("living-door-glow",0x8b5b32,{emissive:0xffb35b,ei:.35})}
  ensureDoor(b){let e=this.doors.get(b.id);if(e)return e;const g=new THREE.Group(),slab=new THREE.Mesh(this.box(Math.min(28,b.w*T*.22),36,4),this.doorMat),glow=new THREE.Mesh(this.box(Math.min(24,b.w*T*.19),31,2),this.doorGlow);slab.position.set(0,18,0);glow.position.set(0,18,-2);g.add(glow,slab);g.position.set((b.x+b.w/2)*T,0,(b.y+b.h)*T-2);this.doorRoot.add(g);e={g,slab,open:0};this.doors.set(b.id,e);return e}
- nearDoorDemand(b,x,z){
-  for(const c of this.game.citizens.list){const s=String(c.state||"");if(c.home===b.id&&s==="TRAVEL_HOME"&&Math.hypot(c.x-x,c.y-z)<T*1.7)return true;if(c.workplace===b.id&&s==="TRAVEL_TO_WORK"&&Math.hypot(c.x-x,c.y-z)<T*1.7)return true}return false
- }
+ nearDoorDemand(b,x,z){for(const c of this.game.citizens.list){const s=String(c.state||"");if(c.home===b.id&&s==="TRAVEL_HOME"&&Math.hypot(c.x-x,c.y-z)<T*1.7)return true;if(c.workplace===b.id&&s==="TRAVEL_TO_WORK"&&Math.hypot(c.x-x,c.y-z)<T*1.7)return true}return false}
  syncDoors(dt,phase){
-  const now=performance.now(),eligible=this.prioritizedBuildings(b=>this.live.buildingState(b).doorVisualEligible,this.doorBudget(),1450),seen=new Set();
+  const now=performance.now(),eligible=this.prioritizedBuildings(b=>this.live.doorVisualEligible(b),this.doorBudget(),1450),seen=new Set();
   for(const b of eligible){const e=this.ensureDoor(b);seen.add(b.id);const x=(b.x+b.w/2)*T,z=(b.y+b.h)*T-2;e.g.position.set(x,0,z);const pulse=(this._doorPulseUntil.get(b.id)||0)>now,target=(pulse||this.nearDoorDemand(b,x,z))?1:0;e.open+=(target-e.open)*Math.min(1,dt*(target?7:3.5));e.slab.rotation.y=-e.open*1.12;e.g.visible=this.screenVisible(x,z,160)}
   for(const[id,e]of this.doors)e.g.visible=seen.has(id)&&e.g.visible;this.doorGlow.emissiveIntensity=(phase==="NIGHT"||phase==="DUSK")?1.1:.16
  }
@@ -92,17 +90,15 @@ export class LivingWorldAtmosphereWorld3D extends MasonShowcaseWorld3D{
   for(let i=0;i<24;i++){const mat=new THREE.MeshBasicMaterial({color:0x77756f,transparent:true,opacity:0,depthWrite:false}),m=new THREE.Mesh(this.smokeGeo,mat);m.visible=false;this.fxRoot.add(m);this.smoke.push({o:m,seed:i})}
  }
  spawnFx(kind,x,z,count=2,burst=false){
-  let made=0;for(const f of this.fx){if(made>=count)break;if(f.o.visible&&f.life>.05)continue;f.kind=kind;f.life=1;f.vx=(made%2?.7:-.55)*(burst?1.8:1);f.vz=((made%3)-1)*.35*(burst?1.5:1);f.o.visible=true;f.o.position.set(x+(made%2?5:-4),burst?15+made*2:20+made*4,z);f.o.scale.setScalar(burst?1.35:1);const hex=kind==="blacksmith"?0xffa148:kind==="lumber"?0xb08b57:kind==="masonBurst"?0xd8cfba:0xb4afa0;f.o.material.color.setHex(hex);f.o.material.opacity=burst?.9:.72;made++}
+  let made=0;for(const f of this.fx){if(made>=count)break;if(f.o.visible&&f.life>.05)continue;f.kind=kind;f.life=1;f.vx=(made%2?.7:-.55)*(burst?1.8:1);f.vz=((made%3)-1)*.35*(burst?1.5:1);f.o.visible=true;f.o.position.set(x+(made%2?5:-4),burst?15+made*2:20+made*4,z);f.o.scale.setScalar(burst?1.35:1);const hex=kind==="blacksmith"?0xffa148:kind==="lumber"?0xb08b57:kind==="farm"?0xb89b62:kind==="masonBurst"?0xd8cfba:0xb4afa0;f.o.material.color.setHex(hex);f.o.material.opacity=burst?.9:.72;made++}
  }
- updateFx(dt){
-  for(const f of this.fx){if(!f.o.visible)continue;f.life-=dt*(f.kind==="masonBurst"?1.15:2.25);f.o.position.y+=dt*(f.kind==="masonBurst"?34:26);f.o.position.x+=f.vx;f.o.position.z+=f.vz;f.o.material.opacity=Math.max(0,f.life*(f.kind==="masonBurst"?.75:.62));if(f.life<=0)f.o.visible=false}
- }
+ updateFx(dt){for(const f of this.fx){if(!f.o.visible)continue;f.life-=dt*(f.kind==="masonBurst"?1.15:2.25);f.o.position.y+=dt*(f.kind==="masonBurst"?34:26);f.o.position.x+=f.vx;f.o.position.z+=f.vz;f.o.material.opacity=Math.max(0,f.life*(f.kind==="masonBurst"?.75:.62));if(f.life<=0)f.o.visible=false}}
  emitWorkFx(now){
   let emitted=0,budget=this.workBudget();
-  for(const c of this.game.citizens.list){if(emitted>=budget)break;const s=this.live.citizen(c);if(!s.workVisualEligible||!["quarry","blacksmith","lumber","mason"].includes(s.workVisual)||!this.screenVisible(s.x,s.y,120))continue;if(((Math.floor(now/190)+s.id)%9)!==0)continue;this.spawnFx(s.workVisual,s.x,s.y,s.workVisual==="mason"?2:1,false);emitted++}
+  for(const c of this.game.citizens.list){if(emitted>=budget)break;const s=this.live.citizen(c);if(!s.workVisualEligible||!["quarry","blacksmith","lumber","mason","farm"].includes(s.workVisual)||!this.screenVisible(s.x,s.y,120))continue;if(((Math.floor(now/190)+s.id)%9)!==0)continue;this.spawnFx(s.workVisual,s.x,s.y,s.workVisual==="mason"?2:1,false);emitted++}
  }
  syncSmoke(now,phase){
-  const active=this.prioritizedBuildings(b=>{const s=this.live.buildingState(b);return s.chimneyVisualEligible&&(b.type==="cottage"?(phase==="NIGHT"||phase==="DUSK"):s.workEffectEligible)},this.smokeBudget(),1500);
+  const active=this.prioritizedBuildings(b=>this.live.chimneyVisualEligible(b)&&(b.type==="cottage"?(phase==="NIGHT"||phase==="DUSK"):this.live.workEffectEligible(b)),this.smokeBudget(),1500);
   for(let i=0;i<this.smoke.length;i++){const f=this.smoke[i],b=active[i];if(!b){f.o.visible=false;continue}const age=(now*.00018+f.seed*.23)%1,x=(b.x+b.w*.72)*T,z=(b.y+b.h*.34)*T;if(!this.screenVisible(x,z,220)){f.o.visible=false;continue}f.o.visible=true;f.o.position.set(x+Math.sin(now*.001+f.seed)*4,70+age*55,z);f.o.scale.setScalar(.5+age*1.4);f.o.material.opacity=(1-age)*.14}
  }
 
