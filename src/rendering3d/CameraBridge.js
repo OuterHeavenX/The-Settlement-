@@ -12,7 +12,7 @@ export class CameraBridge{
  sync(){
   const c=this.game?.camera;if(!c)return;
   const d=this.distance,flat=Math.cos(PITCH)*d,up=Math.sin(PITCH)*d;
-  this.camera.position.set(c.x,c.y?up:up,c.y+flat);
+  this.camera.position.set(c.x,up,c.y+flat);
   this.camera.up.set(0,1,0);
   this.camera.lookAt(c.x,0,c.y);
  }
