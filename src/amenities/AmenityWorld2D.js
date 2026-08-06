@@ -1,0 +1,37 @@
+/* Bespoke Canvas2D amenity art. Simulation remains shared with 3D. */
+(()=>{
+ const baseBuilding=Settlement.Renderer.prototype.building,baseCitizen=Settlement.Renderer.prototype.citizen;
+ const T=64;
+ function amenityDraw(r,b){
+  const ctx=r.ctx,d=Settlement.BuildingDefs[b.type],m=d?.amenityMeta;if(!m)return false;
+  const x=b.x*T,y=b.y*T,w=b.w*T,h=b.h*T,cx=x+w/2,cy=y+h/2,night=r.nightFactor(r.game.citizens.hour?.()||12);
+  ctx.save();ctx.translate(cx,cy);ctx.lineCap="round";ctx.lineJoin="round";
+  const stone="#77746d",dark="#282329",wood="#4a3427",iron="#25272b",leaf="#415039",flower="#8d5268",water="#344d59",warm="#e3a35a";
+  const glow=(rad=28,a=.12)=>{if(night<=.15)return;ctx.globalAlpha=a*night;ctx.fillStyle=warm;ctx.beginPath();ctx.arc(0,0,rad,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1};
+  switch(m.visualType){
+   case"lamp":glow(34,.22);ctx.strokeStyle=iron;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(0,22);ctx.lineTo(0,-19);ctx.lineTo(10,-26);ctx.stroke();ctx.fillStyle=warm;ctx.fillRect(5,-31,12,13);ctx.strokeStyle="#aa8a58";ctx.strokeRect(5,-31,12,13);break;
+   case"woodBench":case"stoneBench":ctx.fillStyle=m.visualType==="woodBench"?wood:stone;ctx.fillRect(-23,-5,46,11);ctx.fillRect(-21,7,5,13);ctx.fillRect(16,7,5,13);ctx.strokeStyle=iron;ctx.lineWidth=3;ctx.strokeRect(-23,-5,46,11);break;
+   case"snackCart":glow(30,.13);ctx.fillStyle=wood;ctx.fillRect(-20,-10,40,25);ctx.fillStyle="#6f3d42";ctx.beginPath();ctx.moveTo(-24,-12);ctx.lineTo(-18,-27);ctx.lineTo(18,-27);ctx.lineTo(24,-12);ctx.closePath();ctx.fill();ctx.fillStyle="#1f1d20";ctx.beginPath();ctx.arc(-17,18,7,0,7);ctx.arc(17,18,7,0,7);ctx.fill();ctx.fillStyle=warm;ctx.beginPath();ctx.arc(13,-4,4,0,7);ctx.fill();break;
+   case"park":ctx.fillStyle="#5c503b";ctx.fillRect(-8,-h/2+8,16,h-16);ctx.fillRect(-w/2+8,-8,w-16,16);for(const[px,py]of[[-55,-55],[55,-50],[-52,54],[54,52]]){ctx.fillStyle=leaf;ctx.beginPath();ctx.arc(px,py,20,0,7);ctx.fill();ctx.fillStyle=wood;ctx.fillRect(px-3,py+12,6,15)}ctx.fillStyle=flower;for(let i=0;i<9;i++){ctx.beginPath();ctx.arc(-28+i*7,30+(i%2)*5,3,0,7);ctx.fill()}break;
+   case"pond":ctx.fillStyle=water;ctx.beginPath();ctx.ellipse(0,0,w*.42,h*.36,-.12,0,7);ctx.fill();ctx.strokeStyle=stone;ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle="#75919a";ctx.lineWidth=2;ctx.globalAlpha=.55;ctx.beginPath();ctx.ellipse(8,-4,w*.18,h*.09,0,0,7);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle="#586b4e";for(const p of[[-55,30],[50,-35],[-35,-48]])ctx.fillRect(p[0],p[1],4,19);break;
+   case"fountain":glow(44,.06);ctx.fillStyle=stone;ctx.beginPath();ctx.ellipse(0,9,w*.38,h*.26,0,0,7);ctx.fill();ctx.fillStyle=water;ctx.beginPath();ctx.ellipse(0,6,w*.3,h*.18,0,0,7);ctx.fill();ctx.fillStyle=stone;ctx.fillRect(-6,-28,12,37);ctx.strokeStyle="#8cb0ba";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-23);ctx.quadraticCurveTo(18,-10,12,7);ctx.moveTo(0,-23);ctx.quadraticCurveTo(-18,-10,-12,7);ctx.stroke();break;
+   case"brazier":glow(34,.24);ctx.fillStyle=iron;ctx.beginPath();ctx.arc(0,6,17,0,Math.PI);ctx.fill();ctx.strokeStyle=iron;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(-10,10);ctx.lineTo(-15,24);ctx.moveTo(10,10);ctx.lineTo(15,24);ctx.stroke();ctx.fillStyle=warm;ctx.beginPath();ctx.moveTo(-8,1);ctx.quadraticCurveTo(-2,-21,2,-5);ctx.quadraticCurveTo(11,-18,9,2);ctx.closePath();ctx.fill();break;
+   case"statue":ctx.fillStyle=stone;ctx.fillRect(-18,16,36,13);ctx.fillRect(-12,-5,24,24);ctx.beginPath();ctx.arc(0,-18,10,0,7);ctx.fill();ctx.fillStyle=dark;ctx.fillRect(-4,-9,8,27);break;
+   case"garden":ctx.strokeStyle=stone;ctx.lineWidth=6;ctx.strokeRect(-w/2+8,-h/2+10,w-16,h-20);ctx.fillStyle=leaf;for(let i=0;i<13;i++){ctx.beginPath();ctx.arc(-45+(i%7)*15,-10+Math.floor(i/7)*21,7,0,7);ctx.fill()}ctx.fillStyle=flower;for(let i=0;i<10;i++){ctx.beginPath();ctx.arc(-40+(i%5)*20,-8+Math.floor(i/5)*22,3,0,7);ctx.fill()}break;
+   case"notice":ctx.fillStyle=wood;ctx.fillRect(-21,-24,42,35);ctx.fillRect(-4,11,8,20);ctx.fillStyle="#d2bd8d";ctx.fillRect(-14,-17,11,13);ctx.fillRect(2,-18,13,16);ctx.fillStyle="#7b303e";ctx.beginPath();ctx.arc(7,-6,3,0,7);ctx.fill();break;
+   case"table":ctx.fillStyle=wood;ctx.fillRect(-45,-8,90,17);ctx.fillRect(-38,-21,76,8);ctx.fillRect(-38,14,76,8);ctx.fillRect(-32,8,6,18);ctx.fillRect(26,8,6,18);break;
+   case"gazebo":glow(65,.08);ctx.strokeStyle=wood;ctx.lineWidth=7;for(const p of[[-65,-55],[65,-55],[-65,55],[65,55]]){ctx.beginPath();ctx.moveTo(p[0],p[1]+18);ctx.lineTo(p[0],p[1]-24);ctx.stroke()}ctx.fillStyle="#353139";ctx.beginPath();ctx.moveTo(-78,-48);ctx.lineTo(0,-90);ctx.lineTo(78,-48);ctx.lineTo(62,-34);ctx.lineTo(-62,-34);ctx.closePath();ctx.fill();ctx.strokeStyle="#8d7348";ctx.lineWidth=3;ctx.strokeRect(-58,24,116,26);break;
+   case"gameTable":ctx.fillStyle=wood;ctx.fillRect(-17,-15,34,30);ctx.strokeStyle="#b59a6c";ctx.lineWidth=2;for(let i=-12;i<=8;i+=10){ctx.beginPath();ctx.moveTo(i,-15);ctx.lineTo(i,15);ctx.stroke();ctx.beginPath();ctx.moveTo(-17,i);ctx.lineTo(17,i);ctx.stroke()}ctx.fillStyle=dark;ctx.beginPath();ctx.arc(-5,-5,3,0,7);ctx.arc(6,6,3,0,7);ctx.fill();break;
+   case"tree":ctx.fillStyle=wood;ctx.fillRect(-5,5,10,27);ctx.fillStyle=leaf;ctx.beginPath();ctx.arc(0,-10,25,0,7);ctx.arc(-15,2,18,0,7);ctx.arc(16,1,19,0,7);ctx.fill();break;
+   case"planter":ctx.fillStyle=stone;ctx.fillRect(-21,3,42,20);ctx.fillStyle=leaf;ctx.beginPath();ctx.arc(0,-2,20,0,7);ctx.fill();ctx.fillStyle=flower;for(const p of[[-10,-9],[2,-14],[12,-5],[-2,1]]){ctx.beginPath();ctx.arc(p[0],p[1],4,0,7);ctx.fill()}break;
+   case"birdBath":ctx.fillStyle=stone;ctx.fillRect(-4,-2,8,25);ctx.beginPath();ctx.ellipse(0,-7,17,8,0,0,7);ctx.fill();ctx.fillStyle=water;ctx.beginPath();ctx.ellipse(0,-9,13,4,0,0,7);ctx.fill();break;
+   case"banner":ctx.strokeStyle=iron;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-7,27);ctx.lineTo(-7,-28);ctx.stroke();ctx.fillStyle="#6f2639";ctx.beginPath();ctx.moveTo(-5,-24);ctx.lineTo(22,-18);ctx.lineTo(18,5);ctx.lineTo(-5,1);ctx.closePath();ctx.fill();break;
+   case"memorial":glow(42,.08);ctx.strokeStyle=stone;ctx.lineWidth=5;ctx.strokeRect(-w/2+8,-h/2+8,w-16,h-16);ctx.fillStyle=stone;ctx.fillRect(-12,-24,24,45);ctx.fillStyle=flower;for(const p of[[-38,23],[-27,31],[26,26],[38,18]]){ctx.beginPath();ctx.arc(p[0],p[1],5,0,7);ctx.fill()}ctx.fillStyle=warm;ctx.fillRect(-30,-4,4,9);ctx.fillRect(27,-1,4,9);break;
+   case"stage":glow(52,.07);ctx.fillStyle=wood;ctx.fillRect(-w*.38,-h*.2,w*.76,h*.48);ctx.strokeStyle="#7d5c40";ctx.lineWidth=5;ctx.strokeRect(-w*.38,-h*.2,w*.76,h*.48);ctx.strokeStyle=iron;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-42,-15);ctx.lineTo(-42,-47);ctx.lineTo(42,-47);ctx.lineTo(42,-15);ctx.stroke();ctx.fillStyle=warm;ctx.beginPath();ctx.arc(-42,-46,4,0,7);ctx.arc(42,-46,4,0,7);ctx.fill();break;
+  }
+  ctx.restore();return true;
+ }
+ Settlement.Renderer.prototype.building=function(b){if(b.complete&&Settlement.BuildingDefs[b.type]?.amenity){amenityDraw(this,b);return}return baseBuilding.call(this,b)};
+ Settlement.Renderer.prototype.citizen=function(c){baseCitizen.call(this,c);const p=this.game.amenities?.presentation(c);if(!p||p.phase!=="using")return;const ctx=this.ctx;ctx.save();ctx.font="13px Georgia";ctx.textAlign="center";ctx.fillStyle="#f0ddad";const symbol=p.kind==="sit"?"▁":p.kind==="game"?"♟":p.kind==="read"?"⌑":p.kind==="warm"?"♨":p.snack?"🌽":"·";ctx.fillText(symbol,p.x,p.y-27);if(p.snack)ctx.fillText("🌽",p.x+11,p.y-8);ctx.restore()};
+ Settlement.AmenityWorld2D={draw:amenityDraw};
+})();
