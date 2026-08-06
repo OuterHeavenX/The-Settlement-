@@ -3,6 +3,6 @@ Settlement.UnlockDefs={
  3:["🏠 Cottage Level 2","⚙️ Mill","🏹 Archery Tower","🏛️ Main Hall"],
  4:["🥖 Bakery","🧱 Mason's Yard"],
  5:["🗺️ Second Frontier","🏛️ Main Hall II","⛏️ Iron Mine","🏪 Market"],
- 6:["🏘️ Cottage Level 3","🔥 Smelter"],
+ 6:["🏘️ Cottage Level 3","🔥 Smelter","🛡️ Barracks"],
  7:["⚒️ Blacksmith"]
 };
