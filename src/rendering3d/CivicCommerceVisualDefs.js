@@ -1,4 +1,6 @@
-/* Presentation-only Civic & Commerce visual definitions. */
+/* Presentation-only Civic & Commerce visual definitions.
+ * Deployment touch: behavior-identical checkpoint for Cloudflare production detection.
+ */
 export const CivicCommerceVisualDefs={
  warehouse:{finished:true,family:"gothic-warehouse",props:["crates","barrels","loadingAwning","ledgerLantern"]},
  mainHall:{finished:true,family:"gothic-civic-hall",props:["stonePlinth","banners","lanterns","noticeBoard"]},
