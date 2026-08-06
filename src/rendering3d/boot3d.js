@@ -11,7 +11,7 @@ function webgpuOK(){return!!navigator.gpu}
 function wantsWebGPU(){try{const q=new URLSearchParams(location.search);return q.get("webgpu")==="1"||q.get("renderer")==="webgpu"}catch(e){return false}}
 async function whenGame(){for(let i=0;i<400;i++){if(window.game)return window.game;await new Promise(r=>setTimeout(r,25))}return null}
 function makeCanvas(shell,old){const c=document.createElement("canvas");c.id="game-canvas-3d";c.style.pointerEvents="auto";shell.insertBefore(c,old);return c}
-async function startWebGL(game,canvas){let LivingWorldAtmosphereWorld3D;({LivingWorldAtmosphereWorld3D}=await import("./LivingWorldAtmosphereWorld3D.js"));const world=new LivingWorldAtmosphereWorld3D(game,canvas);return(await Promise.resolve(world.init()))?world:null}
+async function startWebGL(game,canvas){let LivingWorldCheckpointWorld3D;({LivingWorldCheckpointWorld3D}=await import("./LivingWorldCheckpointWorld3D.js"));const world=new LivingWorldCheckpointWorld3D(game,canvas);return(await Promise.resolve(world.init()))?world:null}
 async function startWebGPU(game,canvas){if(!webgpuOK())return null;const{WebGPUVerticalSlice}=await import("./WebGPUVerticalSlice.js");const world=new WebGPUVerticalSlice(game,canvas);return(await Promise.resolve(world.init()))?world:null}
 async function boot(){
  const game=await whenGame();if(!game){console.warn("The Settlement: game never appeared, optional 3D layer not started");return}
