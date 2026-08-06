@@ -10,16 +10,16 @@ async function boot(){
  const game=await whenGame();if(!game){console.warn("The Settlement: game never appeared, 3D layer not started");return}
  Settlement.renderer3dSupported=webglOK();Settlement.renderer3dEnabled=false;Settlement.setRenderer3D=mode=>{setPref(mode);location.reload()};
  if(!pref()||!Settlement.renderer3dSupported)return;
- let IndustryWorld3D;try{({IndustryWorld3D}=await import("./IndustryWorld3D.js"))}catch(e){console.error("Industry 3D presentation unavailable, staying on the 2D renderer:",e);return}
+ let BloodWorld3D;try{({BloodWorld3D}=await import("./BloodWorld3D.js"))}catch(e){console.error("Blood & Plunder 3D presentation unavailable, staying on the 2D renderer:",e);return}
  const shell=document.querySelector("#game-shell"),old=document.querySelector("#game-canvas");if(!shell||!old)return;
  const c3d=document.createElement("canvas");c3d.id="game-canvas-3d";shell.insertBefore(c3d,old);
- const world=new IndustryWorld3D(game,c3d);let started=false;try{started=world.init()}catch(e){console.error("World3D init failed:",e);started=false}
+ const world=new BloodWorld3D(game,c3d);let started=false;try{started=world.init()}catch(e){console.error("World3D init failed:",e);started=false}
  if(!started){c3d.remove();console.warn("The Settlement: falling back to the 2D renderer");return}
  old.classList.add("hidden");game.world3d=world;Settlement.renderer3dEnabled=true;
  game.input=new Settlement.InputManager(game,c3d);
  game.camera.screenToWorld=(sx,sy)=>world.screenToWorld(sx,sy);game.camera.worldToScreen=(wx,wy)=>world.worldToScreen(wx,wy);
  const baseResize=game.renderer.resize.bind(game.renderer);game.renderer.resize=()=>{baseResize();world.resize()};game.renderer.draw=()=>world.render();
  game.bus.on("quality:changed",()=>{world.applyQuality();world.resize()});addEventListener("resize",()=>world.resize());world.resize();
- console.info("The Settlement: Industry & Commerce 3D renderer active");
+ console.info("The Settlement: Blood & Plunder 3D renderer active");
 }
 boot();
