@@ -15,6 +15,14 @@ export class LivingWorldPresentationState{
     because normalize may create b.production merely by rendering the building. */
  productionActive(b){return !!(b?.complete&&b.production?.active)}
  productionProgress(b){return this.productionActive(b)?Math.max(0,Math.min(1,Number(b.production?.progress)||0)):0}
+ doorVisualEligible(b){return !!(b?.complete&&DOOR_TYPES.has(b.type))}
+ chimneyVisualEligible(b){return !!(b?.complete&&CHIMNEY_TYPES.has(b.type))}
+ workEffectEligible(b){
+  if(!b?.complete)return false;
+  const active=this.productionActive(b);if(b.type==="mason")return active;if(active)return true;
+  for(const c of this.game.citizens?.list||[])if(c.workplace===b.id&&c.state==="WORKING")return true;
+  return false
+ }
  citizen(c){
   const workplace=this.building(c.workplace),home=this.building(c.home),state=String(c.state||"WANDERING"),working=state==="WORKING";
   let workVisualEligible=working&&!!workplace;
@@ -26,20 +34,12 @@ export class LivingWorldPresentationState{
  citizens(){return Object.freeze((this.game.citizens?.list||[]).map(c=>this.citizen(c)))}
  buildingState(b){
   let residents=0,workers=0,working=false;
-  for(const c of this.game.citizens?.list||[]){
-   if(c.home===b.id)residents++;
-   if(c.workplace===b.id){workers++;if(c.state==="WORKING")working=true}
-  }
+  for(const c of this.game.citizens?.list||[]){if(c.home===b.id)residents++;if(c.workplace===b.id){workers++;if(c.state==="WORKING")working=true}}
   const active=this.productionActive(b);
-  return Object.freeze({id:b.id,type:b.type,x:b.x,y:b.y,w:b.w,h:b.h,complete:!!b.complete,workers:b.workers||0,occupiedVisual:residents>0||workers>0,activeVisual:active||working,doorVisualEligible:!!b.complete&&DOOR_TYPES.has(b.type),chimneyVisualEligible:!!b.complete&&CHIMNEY_TYPES.has(b.type),workEffectEligible:b.type==="mason"?active:(active||working)});
+  return Object.freeze({id:b.id,type:b.type,x:b.x,y:b.y,w:b.w,h:b.h,complete:!!b.complete,workers:b.workers||0,occupiedVisual:residents>0||workers>0,activeVisual:active||working,doorVisualEligible:this.doorVisualEligible(b),chimneyVisualEligible:this.chimneyVisualEligible(b),workEffectEligible:b.type==="mason"?active:(active||working)});
  }
  doorDemand(buildingId){
-  for(const c of this.game.citizens?.list||[]){
-   const s=String(c.state||"");
-   if(c.home===buildingId&&(s==="TRAVEL_HOME"||s==="ARRIVING"))return 1;
-   if(c.workplace===buildingId&&s==="TRAVEL_TO_WORK")return 1;
-  }
-  return 0;
+  for(const c of this.game.citizens?.list||[]){const s=String(c.state||"");if(c.home===buildingId&&(s==="TRAVEL_HOME"||s==="ARRIVING"))return 1;if(c.workplace===buildingId&&s==="TRAVEL_TO_WORK")return 1}return 0
  }
  weather(){const w=this.game.weather||this.game.world?.weather||null;return Object.freeze({exists:!!w,state:w?.state||w?.type||null,rain:!!(w?.rain||w?.state==="rain"||w?.type==="rain"),storm:!!(w?.storm||w?.state==="storm"||w?.type==="storm")})}
  contextLine(s){if(s.workVisualEligible){return({Farmer:"Harvest looks promising.",Lumberjack:"Plenty to cut today.",Stonecutter:"Good stone in this face.",Stonemason:"Measure twice. Strike once.",Blacksmith:"Keep the forge hot.",Miller:"Another sack for the mill.",Baker:"Fresh bread before dusk.",Guard:"Keep the gate secured.",Archer:"The frontier is quiet."})[s.job]||"Work goes on."}if(s.state==="SOCIALIZING")return"A fine evening for the square.";if(s.morale!=null&&s.morale>=90)return"The town is thriving.";if(s.state==="HOME")return"Home before dark.";return null}
