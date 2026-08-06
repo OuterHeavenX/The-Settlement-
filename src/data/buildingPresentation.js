@@ -8,6 +8,7 @@ Settlement.BuildingPresentation={
  quarry:{style:"quarry",materials:["stone","roughTimber"],entrance:"south",props:["rockPile","timberSupport","cart"]},
  mason:{style:"masonYard",materials:["stone","roughTimber"],roof:"leanTo",entrance:"south",props:["roughStone","cutStone","workbench"]},
  training:{style:"trainingYard",materials:["dirt","timber"],entrance:"south",props:["dummy","weaponRack","target"]},
+ barracks:{style:"gothicBarracks",materials:["darkStone","roughTimber","iron"],roof:"slate",entrance:"south",props:["weaponRack","shields","banner","lantern"]},
  archery:{style:"archeryTower",materials:["roughTimber"],roof:"shingle",entrance:"south",props:["banner"]},
  wall:{style:"palisade",materials:["roughTimber"]},
  gate:{style:"gate",materials:["roughTimber","iron"],entrance:"center"},
