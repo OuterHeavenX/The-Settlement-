@@ -1,5 +1,6 @@
 /* Presentation-only showcase polish for Lumber Camp and Quarry.
  * Reads existing building state only. No production, workers, resources, collision or saves.
+ * Deployment touch: behavior-identical checkpoint for Cloudflare production detection.
  */
 import * as THREE from "../../vendor/three/three.module.min.js";
 import {CompleteSettlementWorld3D} from "./CompleteSettlementWorld3D.js";
