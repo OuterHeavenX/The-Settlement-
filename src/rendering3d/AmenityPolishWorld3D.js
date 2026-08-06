@@ -39,7 +39,7 @@ export class AmenityPolishWorld3D extends PolishWorld3D{
   }
   g.position.set((b.x+b.w/2)*T,0,(b.y+b.h/2)*T);g.userData.buildingId=b.id;g.userData.amenity=true;return g
  }
- syncLivingCitizens(now){super.syncLivingCitizens(now);for(const c of this.game.citizens.list){const e=this.livingSprites?.get(c.id),p=this.game.amenities?.presentation(c);if(!e?.group)continue;e.group.scale.y=(p?.phase==="using"&&(p.kind==="sit"||p.kind==="game"))?.72:1;if(p?.phase==="using"){e.group.position.x=p.x;e.group.position.z=p.y}}}
+ syncLivingCitizens(now){super.syncLivingCitizens(now);for(const c of this.game.citizens.list){const e=this.livingSprites?.get(c.id),p=this.game.amenities?.presentation(c);if(!e?.group)continue;e.group.scale.y=(p?.phase==="using"&&(p.kind==="sit"||p.kind==="game")) ? .72 : 1;if(p?.phase==="using"){e.group.position.x=p.x;e.group.position.z=p.y}}}
  updateAmenityLights(){
   const tier=this.game.quality?.tier||"MEDIUM",budget={LOW:2,MEDIUM:4,HIGH:7,ULTRA:10}[tier]||4,phase=this.live?.phase?.(),night=phase==="NIGHT"||phase==="DUSK"||phase==="DAWN";
   const cx=this.game.camera.x,cz=this.game.camera.y,glows=[];if(night)for(const b of this.game.buildings.list){const m=Settlement.BuildingDefs[b.type]?.amenityMeta;if(!b.complete||!m?.nightRelevant)continue;const x=(b.x+b.w/2)*T,z=(b.y+b.h/2)*T;glows.push({x,z,d:(x-cx)*(x-cx)+(z-cz)*(z-cz),type:m.visualType})}glows.sort((a,b)=>a.d-b.d);
