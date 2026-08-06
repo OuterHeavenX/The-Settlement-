@@ -19,7 +19,7 @@
   root.__mobileTouchBridgeBound=true;
   const starts=new Map();
   let suppressUntil=0,suppressTarget=null;
-  const interactive=t=>t?.closest?.("button,[data-nav],[data-build],[data-act]")||null;
+  const interactive=t=>t?.closest?.("button,[data-nav],[data-build],[data-act],[data-place-act]")||null;
   const activate=(el)=>{
    if(!el||el.disabled)return false;
    if(el.id==="start"){this.start();return true}
@@ -29,6 +29,16 @@
    if(el.dataset.nav){this.nav(el.dataset.nav);return true}
    if(el.dataset.build){this.game.placement.start(el.dataset.build);return true}
    if(el.dataset.act){this.action(el.dataset.act,el.dataset.id);return true}
+   if(el.dataset.placeAct==="confirm"){
+    this.game.audio?.play("tap");
+    this.game.placement.confirm();
+    return true;
+   }
+   if(el.dataset.placeAct==="cancel"){
+    this.game.audio?.play("tap");
+    this.game.placement.cancel("user");
+    return true;
+   }
    return false;
   };
   root.addEventListener("pointerdown",e=>{
