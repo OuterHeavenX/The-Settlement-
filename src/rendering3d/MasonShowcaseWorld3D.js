@@ -39,7 +39,9 @@ export class MasonShowcaseWorld3D extends LumberQuarryShowcaseWorld3D{
   this.part(this.box(32,5,24),timber,-w*.05,7,d*.37,g);
 
   // Finished cut-stone storage stays completely inside the authoritative 2x2 footprint.
-  const cutRoot=new THREE.Group();g.add(cutRoot),rows=2+Math.min(2,t);
+  const cutRoot=new THREE.Group();
+  g.add(cutRoot);
+  const rows=2+Math.min(2,t);
   for(let r=0;r<rows;r++)for(let i=0;i<2;i++)this.part(this.box(23,8,16),stone,w*.22+i*19,4+r*9,d*.27-r*2,cutRoot);
   if(t>=2)for(let i=0;i<2;i++)this.part(this.cylinder("column",6,7,38,10),stone,w*.22+i*19,19,-d*.02,g);
   if(t>=3){this.part(this.box(34,10,13),stone,w*.27,5,-d*.34,g);this.part(this.box(20,20,9),stone,w*.32,18,-d*.34,g)}
