@@ -1,4 +1,4 @@
-/* Gold-funded civic beautification. Existing economy values are untouched. */
+/* Gold-funded civic beautification + additive compact defenses. Existing economy values are untouched. */
 (()=>{
  const A={
   gothicLamp:{name:"Gothic Lamp Post",icon:"🏮",footprint:[1,1],gold:40,buildTime:3,flavor:"Warm light for dark streets.",interactions:["wait","talk"],slots:2,layout:"sides",night:true,visual:"lamp"},
@@ -34,7 +34,8 @@
   gatehouseTurret:{id:"gatehouseTurret",name:"Gatehouse Turret",category:"Military",icon:"🏰",footprint:[2,1],cost:{wood:100,stone:120,cutStone:15,ironBar:8,gold:420},buildTime:18,xpReward:120,requiredTownLevel:9,defenseTurret:true,range:5.8,damage:14,fireRate:1.1,projectile:"bolt"},
   spikeTrap:{id:"spikeTrap",name:"Spike Trap",category:"Military",icon:"🔻",footprint:[1,1],cost:{wood:35,ironOre:4,gold:55},buildTime:4,xpReward:25,requiredTownLevel:3,defenseTrap:true,trapDamage:12,trapCooldown:2.5},
   barricade:{id:"barricade",name:"Reinforced Barricade",category:"Military",icon:"🪵",footprint:[1,1],cost:{wood:70,ironOre:5,gold:60},buildTime:6,xpReward:35,requiredTownLevel:3,defenseSlow:true,slowRadius:1.25,slowFactor:.58},
-  watchBeacon:{id:"watchBeacon",name:"Watch Beacon",category:"Military",icon:"🚨",footprint:[1,1],cost:{wood:55,stone:35,gold:90},buildTime:6,xpReward:35,requiredTownLevel:4,securityBonus:4}
+  watchBeacon:{id:"watchBeacon",name:"Watch Beacon",category:"Military",icon:"🚨",footprint:[1,1],cost:{wood:55,stone:35,gold:90},buildTime:6,xpReward:35,requiredTownLevel:4,securityBonus:4},
+  hallOfLegends:{id:"hallOfLegends",name:"Hall of Legends",category:"Civic",icon:"👑",footprint:[5,5],cost:{wood:420,stone:360,cutStone:80,ironBar:20,gold:1200},buildTime:48,xpReward:350,requiredTownLevel:10,unique:true,claimsTerritory:true,remoteClaim:true,claimSize:17,defenseTurret:true,range:7.2,damage:10,fireRate:1.65,projectile:"legendArrow",archerCount:2,securityBonus:12,legendHall:true,flavor:"A fortified Gothic monument that establishes a distant holding and records the settlement's greatest names."}
  };
  Object.assign(Settlement.BuildingDefs,D);Settlement.DefenseTurretDefs=D;
 })();
