@@ -29,10 +29,11 @@ Settlement.ExpansionManager=class{
  unclaimedCells(rect){let out=[];if(!rect)return out;for(let y=rect.y;y<rect.y+rect.h;y++)for(let x=rect.x;x<rect.x+rect.w;x++)if(!this.isClaimed(x,y))out.push({x,y});return out}
  sameRect(a,b){return !!(a&&b&&a.x===b.x&&a.y===b.y&&a.w===b.w&&a.h===b.h)}
  recalcCount(){this.claimed=Math.max(0,this.claimedRects.filter(r=>!r.base).length)}
+ historicalRectsFor(b){if(!b)return[];if(b.type==="hallOfLegends")return[this.claimRectFor(b.type,b.x,b.y,b.level||1)];if(b.type!=="archery")return[];let levels=[1,5,10,15,b.level||1],seen=new Set,out=[];for(const lv of levels){let r=this.claimRectFor("archery",b.x,b.y,lv),k=r&&`${r.x},${r.y},${r.w},${r.h}`;if(r&&!seen.has(k)){seen.add(k);out.push(r)}}return out}
  adoptLegacySources(){
   let changed=false;
   if(this.claimedRects.length&&!this.claimedRects.some(r=>r.base)){let C=Settlement.Config,r=this.claimedRects.find(x=>x.x===C.START_X&&x.y===C.START_Y&&x.w===C.START_W&&x.h===C.START_H);if(r){r.base=true;changed=true}}
-  for(const b of this.game.buildings.list){if(!b.complete||!(b.type==="archery"||b.type==="hallOfLegends"))continue;if(this.claimedRects.some(r=>r.sourceId===b.id))continue;let want=this.rectForBuilding(b),legacy=this.claimedRects.find(r=>!r.base&&r.sourceId==null&&this.sameRect(r,want));if(legacy){legacy.sourceId=b.id;legacy.sourceType=b.type;changed=true}}
+  for(const b of this.game.buildings.list){if(!b.complete||!(b.type==="archery"||b.type==="hallOfLegends"))continue;let historical=this.historicalRectsFor(b);for(const legacy of this.claimedRects){if(legacy.base||legacy.sourceId!=null)continue;if(historical.some(want=>this.sameRect(legacy,want))){legacy.sourceId=b.id;legacy.sourceType=b.type;changed=true}}}
   this.recalcCount();if(changed)this.invalidate();return changed
  }
  removeSourceClaim(id){let before=this.claimedRects.length;this.claimedRects=this.claimedRects.filter(r=>r.sourceId!==id);if(this.claimedRects.length!==before){this.recalcCount();this.invalidate();return true}return false}
@@ -46,7 +47,7 @@ Settlement.ExpansionManager=class{
  syncSourceClaim(b,announce=false){
   if(!b?.complete)return false;
   let old=this.claimedRects.find(r=>r.sourceId===b.id),rect=this.rectForBuilding(b);if(!rect)return false;
-  if(old&&this.sameRect(old,rect))return false;
+  if(old&&this.sameRect(old,rect)&&this.claimedRects.filter(r=>r.sourceId===b.id).length===1)return false;
   this.removeSourceClaim(b.id);let fresh=this.unclaimedCells(rect),tag={...rect,sourceId:b.id,sourceType:b.type};this.claimedRects.push(tag);this.recalcCount();this.invalidate();if(announce){this.lastClaim={rect:tag,t:0,cells:fresh.length};let name=Settlement.BuildingDefs[b.type]?.name||"Frontier structure";this.game.bus.emit("territory:claimed",{rect:tag,tiles:fresh.length,building:b,name,revision:this.revision,moved:!!old})}return true
  }
  claimForBuilding(b){return this.syncSourceClaim(b,true)}
