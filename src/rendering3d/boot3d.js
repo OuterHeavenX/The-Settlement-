@@ -13,10 +13,10 @@ async function whenGame(){for(let i=0;i<400;i++){if(window.game)return window.ga
 function makeCanvas(shell,old){const c=document.createElement("canvas");c.id="game-canvas-3d";c.style.pointerEvents="auto";shell.insertBefore(c,old);return c}
 async function startWebGL(game,canvas){
  try{
-  const{AmenityPolishWorld3D}=await import("./AmenityPolishWorld3D.js?v=0.11.2-amenity-render-path");
-  const world=new AmenityPolishWorld3D(game,canvas);
+  const{AmenityStableWorld3D}=await import("./AmenityStableWorld3D.js?v=0.11.3-amenity-stability");
+  const world=new AmenityStableWorld3D(game,canvas);
   if(await Promise.resolve(world.init()))return world;
- }catch(e){console.error("The Settlement: amenity polish 3D layer failed; restoring proven living-world renderer",e)}
+ }catch(e){console.error("The Settlement: stable amenity 3D layer failed; restoring proven living-world renderer",e)}
  try{
   const{LivingWorldCheckpointWorld3D}=await import("./LivingWorldCheckpointWorld3D.js");
   const fallback=new LivingWorldCheckpointWorld3D(game,canvas);
@@ -42,6 +42,6 @@ async function boot(){
  const baseResize=game.renderer.resize.bind(game.renderer);game.renderer.resize=()=>{baseResize();world.resize()};
  game.renderer.draw=()=>{try{world.render()}catch(e){console.error("The Settlement: Three.js render exception",e)}};
  game.bus.on("quality:changed",()=>{world.applyQuality?.();world.resize()});addEventListener("resize",()=>world.resize());world.resize();
- console.info(`The Settlement: optional Three.js ${backend.toUpperCase()} amenities living-world presentation active`);
+ console.info(`The Settlement: optional Three.js ${backend.toUpperCase()} stable amenities living-world presentation active`);
 }
 boot();
