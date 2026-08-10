@@ -30,7 +30,7 @@ Settlement.ExpansionManager=class{
  sameRect(a,b){return !!(a&&b&&a.x===b.x&&a.y===b.y&&a.w===b.w&&a.h===b.h)}
  recalcCount(){this.claimed=Math.max(0,this.claimedRects.filter(r=>!r.base).length)}
  historicalRectsFor(b){if(!b)return[];if(b.type==="hallOfLegends")return[this.claimRectFor(b.type,b.x,b.y,b.level||1)];if(b.type!=="archery")return[];let levels=[1,5,10,15,b.level||1],seen=new Set,out=[];for(const lv of levels){let r=this.claimRectFor("archery",b.x,b.y,lv),k=r&&`${r.x},${r.y},${r.w},${r.h}`;if(r&&!seen.has(k)){seen.add(k);out.push(r)}}return out}
- looksLikeLegacySourceRect(r){if(!r||r.base||r.sourceId!=null)return false;let sizes=new Set([5,7,9,11,13,17]);return sizes.has(r.w)||sizes.has(r.h)}
+ looksLikeLegacySourceRect(r){if(!r||r.base||r.sourceId!=null)return false;let sizes=new Set([5,7,9,11,13,17]);return r.w===r.h&&sizes.has(r.w)}
  adoptLegacySources(){
   let changed=false,C=Settlement.Config;
   if(this.claimedRects.length&&!this.claimedRects.some(r=>r.base)){let r=this.claimedRects.find(x=>x.x===C.START_X&&x.y===C.START_Y&&x.w===C.START_W&&x.h===C.START_H);if(r){r.base=true;changed=true}}
