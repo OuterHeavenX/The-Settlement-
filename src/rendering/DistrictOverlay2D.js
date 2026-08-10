@@ -1,0 +1,6 @@
+/* Screen-space district titles for the finished 2D view. Presentation only. */
+(()=>{
+ const p=Settlement.Renderer?.prototype;if(!p||p.__districtOverlay2D)return;p.__districtOverlay2D=true;
+ const base=p.draw;
+ p.draw=function(){base.call(this);if(Settlement.renderer3dEnabled||!this.game.cityEra||this.game.placement?.type)return;let cam=this.game.camera;if(cam.zoom<.42)return;let ctx=this.ctx,dpr=this.dpr||1,W=innerWidth,H=innerHeight;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);for(const d of this.game.cityEra.districts()){let wx=d.x*Settlement.Config.TILE,wy=d.y*Settlement.Config.TILE,x=(wx-cam.x)*cam.zoom+W/2,y=(wy-cam.y)*cam.zoom+H/2;if(x<-120||y<-50||x>W+120||y>H+50)continue;let label=String(d.name).toUpperCase(),font=cam.zoom>.72?13:11;ctx.font=`700 ${font}px Georgia,serif`;let tw=Math.min(190,ctx.measureText(label).width+30),h=cam.zoom>.72?27:23;ctx.globalAlpha=.88;ctx.fillStyle="#17131bcc";ctx.strokeStyle="#b99b63bb";ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x-tw/2,y-h/2,tw,h,8);ctx.fill();ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle="#f3e7cf";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(label,x,y+1,tw-18);ctx.fillStyle="#d4b46f";ctx.beginPath();ctx.arc(x-tw/2+9,y,2.5,0,7);ctx.fill();ctx.beginPath();ctx.arc(x+tw/2-9,y,2.5,0,7);ctx.fill()}ctx.restore()};
+})();
