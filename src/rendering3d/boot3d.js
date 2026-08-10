@@ -11,7 +11,7 @@ function webgpuOK(){return!!navigator.gpu}
 function wantsWebGPU(){try{const q=new URLSearchParams(location.search);return q.get("webgpu")==="1"||q.get("renderer")==="webgpu"}catch(e){return false}}
 async function whenGame(){for(let i=0;i<400;i++){if(window.game)return window.game;await new Promise(r=>setTimeout(r,25))}return null}
 function makeCanvas(shell,old){const c=document.createElement("canvas");c.id="game-canvas-3d";c.style.pointerEvents="auto";shell.insertBefore(c,old);return c}
-async function startWebGL(game,canvas){try{const{PermanentDayWorld3D}=await import("./PermanentDayWorld3D.js?v=0.12.1-permanent-day-direct");const world=new PermanentDayWorld3D(game,canvas);return(await Promise.resolve(world.init()))?world:null}catch(e){console.error("The Settlement: permanent-day 3D renderer failed; remaining safely in 2D",e);return null}}
+async function startWebGL(game,canvas){try{const{LegendsWorld3D}=await import("./LegendsWorld3D.js?v=0.14.0-legends");const world=new LegendsWorld3D(game,canvas);return(await Promise.resolve(world.init()))?world:null}catch(e){console.error("The Settlement: permanent-day Legends 3D renderer failed; remaining safely in 2D",e);return null}}
 async function startWebGPU(game,canvas){if(!webgpuOK())return null;try{const{WebGPUVerticalSlice}=await import("./WebGPUVerticalSlice.js");const world=new WebGPUVerticalSlice(game,canvas);return(await Promise.resolve(world.init()))?world:null}catch(e){console.warn("The Settlement: WebGPU unavailable; trying permanent-day WebGL",e);return null}}
 async function boot(){
  const game=await whenGame();if(!game){console.warn("The Settlement: game never appeared, optional 3D layer not started");return}
@@ -28,6 +28,6 @@ async function boot(){
  const baseResize=game.renderer.resize.bind(game.renderer);game.renderer.resize=()=>{baseResize();world.resize()};
  game.renderer.draw=()=>{try{world.render()}catch(e){console.error("The Settlement: permanent-day 3D render exception",e)}};
  game.bus.on("quality:changed",()=>{world.applyQuality?.();world.resize()});addEventListener("resize",()=>world.resize());world.resize();
- console.info(`The Settlement: optional Three.js ${backend.toUpperCase()} PERMANENT DAY presentation active`);
+ console.info(`The Settlement: optional Three.js ${backend.toUpperCase()} PERMANENT DAY Legends presentation active`);
 }
 boot();
