@@ -1,9 +1,10 @@
 Settlement.SecuritySystem=class{
  constructor(game){this.game=game}
- breakdown(){let g=this.game,bs=g.buildings.list.filter(b=>b.complete),guards=g.citizens.list.filter(c=>c.job==="Guard"&&c.workplace).length,archers=g.citizens.list.filter(c=>c.job==="Archer"&&c.workplace).length,towers=bs.filter(b=>b.type==="archery").length,turrets=bs.filter(b=>Settlement.BuildingDefs[b.type]?.defenseTurret).length,barracks=bs.filter(b=>b.type==="barracks").length,gates=bs.filter(b=>b.type==="gate").length,walls=bs.filter(b=>b.type==="wall").length,beacons=bs.reduce((n,b)=>n+(Settlement.BuildingDefs[b.type]?.securityBonus||0),0);return[
+ breakdown(){let g=this.game,bs=g.buildings.list.filter(b=>b.complete),guards=g.citizens.list.filter(c=>c.job==="Guard"&&c.workplace).length,archers=g.citizens.list.filter(c=>c.job==="Archer"&&c.workplace).length,towers=bs.filter(b=>b.type==="archery").length,turrets=bs.filter(b=>Settlement.BuildingDefs[b.type]?.defenseTurret&&b.type!=="hallOfLegends").length,barracks=bs.filter(b=>b.type==="barracks").length,gates=bs.filter(b=>b.type==="gate").length,walls=bs.filter(b=>b.type==="wall").length,beacons=bs.filter(b=>b.type==="watchBeacon").reduce((n,b)=>n+(Settlement.BuildingDefs[b.type]?.securityBonus||0),0),strongholds=bs.filter(b=>b.type==="hallOfLegends").reduce((n,b)=>n+(Settlement.BuildingDefs[b.type]?.securityBonus||0),0);return[
   {key:"towers",label:"Archery Towers",value:Math.min(20,towers*7)},
   {key:"turrets",label:"Compact Defenses",value:Math.min(16,turrets*2)},
   {key:"beacons",label:"Watch Beacons",value:Math.min(12,beacons)},
+  {key:"strongholds",label:"Strategic Strongholds",value:Math.min(12,strongholds)},
   {key:"archers",label:"Assigned Archers",value:Math.min(10,archers*3)},
   {key:"barracks",label:"Barracks",value:Math.min(18,barracks*9)},
   {key:"guards",label:"Guards",value:Math.min(18,guards*5)},
