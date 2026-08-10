@@ -4,7 +4,7 @@
  * large permanent holding when construction finishes.
  * Claim rectangles are tagged with sourceId/sourceType so moving or demolishing
  * the source can safely move/remove only its own land. Old untagged saves are
- * adopted opportunistically without a SaveSchema bump.
+ * adopted and normalized without a SaveSchema bump.
  */
 Settlement.ExpansionManager=class{
  constructor(game){
@@ -30,10 +30,14 @@ Settlement.ExpansionManager=class{
  sameRect(a,b){return !!(a&&b&&a.x===b.x&&a.y===b.y&&a.w===b.w&&a.h===b.h)}
  recalcCount(){this.claimed=Math.max(0,this.claimedRects.filter(r=>!r.base).length)}
  historicalRectsFor(b){if(!b)return[];if(b.type==="hallOfLegends")return[this.claimRectFor(b.type,b.x,b.y,b.level||1)];if(b.type!=="archery")return[];let levels=[1,5,10,15,b.level||1],seen=new Set,out=[];for(const lv of levels){let r=this.claimRectFor("archery",b.x,b.y,lv),k=r&&`${r.x},${r.y},${r.w},${r.h}`;if(r&&!seen.has(k)){seen.add(k);out.push(r)}}return out}
+ looksLikeLegacySourceRect(r){if(!r||r.base||r.sourceId!=null)return false;let sizes=new Set([5,7,9,11,13,17]);return sizes.has(r.w)||sizes.has(r.h)}
  adoptLegacySources(){
-  let changed=false;
-  if(this.claimedRects.length&&!this.claimedRects.some(r=>r.base)){let C=Settlement.Config,r=this.claimedRects.find(x=>x.x===C.START_X&&x.y===C.START_Y&&x.w===C.START_W&&x.h===C.START_H);if(r){r.base=true;changed=true}}
-  for(const b of this.game.buildings.list){if(!b.complete||!(b.type==="archery"||b.type==="hallOfLegends"))continue;let historical=this.historicalRectsFor(b);for(const legacy of this.claimedRects){if(legacy.base||legacy.sourceId!=null)continue;if(historical.some(want=>this.sameRect(legacy,want))){legacy.sourceId=b.id;legacy.sourceType=b.type;changed=true}}}
+  let changed=false,C=Settlement.Config;
+  if(this.claimedRects.length&&!this.claimedRects.some(r=>r.base)){let r=this.claimedRects.find(x=>x.x===C.START_X&&x.y===C.START_Y&&x.w===C.START_W&&x.h===C.START_H);if(r){r.base=true;changed=true}}
+  let sources=this.game.buildings.list.filter(b=>b.complete&&(b.type==="archery"||b.type==="hallOfLegends"));
+  for(const b of sources){let historical=this.historicalRectsFor(b);for(const legacy of this.claimedRects){if(legacy.base||legacy.sourceId!=null)continue;if(historical.some(want=>this.sameRect(legacy,want))){legacy.sourceId=b.id;legacy.sourceType=b.type;changed=true}}}
+  for(const b of sources){let owned=this.claimedRects.filter(r=>r.sourceId===b.id),want=this.rectForBuilding(b);if(!owned.length){this.claimedRects.push({...want,sourceId:b.id,sourceType:b.type});changed=true}else if(owned.length!==1||!this.sameRect(owned[0],want)){this.claimedRects=this.claimedRects.filter(r=>r.sourceId!==b.id);this.claimedRects.push({...want,sourceId:b.id,sourceType:b.type});changed=true}}
+  let before=this.claimedRects.length;this.claimedRects=this.claimedRects.filter(r=>!this.looksLikeLegacySourceRect(r));if(this.claimedRects.length!==before)changed=true;
   this.recalcCount();if(changed)this.invalidate();return changed
  }
  removeSourceClaim(id){let before=this.claimedRects.length;this.claimedRects=this.claimedRects.filter(r=>r.sourceId!==id);if(this.claimedRects.length!==before){this.recalcCount();this.invalidate();return true}return false}
