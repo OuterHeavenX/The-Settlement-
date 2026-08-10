@@ -2,14 +2,18 @@
  * Archery Towers extend connected frontier claims. The unique Hall of Legends
  * is the deliberate exception: it may be founded remotely and establishes a
  * large permanent holding when construction finishes.
- * Save compatibility is preserved: claims remain ordinary claimedRects.
+ * Claim rectangles are tagged with sourceId/sourceType so moving or demolishing
+ * the source can safely move/remove only its own land. Old untagged saves are
+ * adopted opportunistically without a SaveSchema bump.
  */
 Settlement.ExpansionManager=class{
  constructor(game){
   this.game=game;let C=Settlement.Config;
-  this.claimedRects=[{x:C.START_X,y:C.START_Y,w:C.START_W,h:C.START_H}];
+  this.claimedRects=[{x:C.START_X,y:C.START_Y,w:C.START_W,h:C.START_H,base:true}];
   this.claimed=0;this.revision=0;this.regions=[];this.lastClaim=null;
-  game.bus.on("building:upgraded",b=>{if(b&&b.type==="archery")this.claimForTower(b)});
+  game.bus.on("building:upgraded",b=>{if(b&&(b.type==="archery"||b.type==="hallOfLegends"))this.syncSourceClaim(b,true)});
+  game.bus.on("building:moved",b=>{if(b&&(b.type==="archery"||b.type==="hallOfLegends"))this.syncSourceClaim(b,true)});
+  game.bus.on("building:removed",b=>{if(b&&(b.type==="archery"||b.type==="hallOfLegends"))this.removeSourceClaim(b.id)});
  }
  claimSize(level=1){let d=Settlement.BuildingDefs.archery,lv=Array.isArray(d?.levels)?d.levels.find(x=>x.level===(level||1)):null;return(lv&&lv.claim)||7}
  claimRectFor(type,x,y,level=1){
@@ -23,6 +27,15 @@ Settlement.ExpansionManager=class{
  claimedTiles(){if(this._set&&this._setRev===this.revision)return this._set;let s=new Set();for(const r of this.claimedRects)for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)s.add(x+","+y);this._set=s;this._setRev=this.revision;return s}
  isClaimed(x,y){return this.claimedTiles().has(x+","+y)}
  unclaimedCells(rect){let out=[];if(!rect)return out;for(let y=rect.y;y<rect.y+rect.h;y++)for(let x=rect.x;x<rect.x+rect.w;x++)if(!this.isClaimed(x,y))out.push({x,y});return out}
+ sameRect(a,b){return !!(a&&b&&a.x===b.x&&a.y===b.y&&a.w===b.w&&a.h===b.h)}
+ recalcCount(){this.claimed=Math.max(0,this.claimedRects.filter(r=>!r.base).length)}
+ adoptLegacySources(){
+  let changed=false;
+  if(this.claimedRects.length&&!this.claimedRects.some(r=>r.base)){let C=Settlement.Config,r=this.claimedRects.find(x=>x.x===C.START_X&&x.y===C.START_Y&&x.w===C.START_W&&x.h===C.START_H);if(r){r.base=true;changed=true}}
+  for(const b of this.game.buildings.list){if(!b.complete||!(b.type==="archery"||b.type==="hallOfLegends"))continue;if(this.claimedRects.some(r=>r.sourceId===b.id))continue;let want=this.rectForBuilding(b),legacy=this.claimedRects.find(r=>!r.base&&r.sourceId==null&&this.sameRect(r,want));if(legacy){legacy.sourceId=b.id;legacy.sourceType=b.type;changed=true}}
+  this.recalcCount();if(changed)this.invalidate();return changed
+ }
+ removeSourceClaim(id){let before=this.claimedRects.length;this.claimedRects=this.claimedRects.filter(r=>r.sourceId!==id);if(this.claimedRects.length!==before){this.recalcCount();this.invalidate();return true}return false}
  canBuild(type,x,y,w,h){
   let d=Settlement.BuildingDefs[type];
   if(d?.remoteClaim){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(!this.game.grid.inBounds(xx,yy))return false;return true}
@@ -30,7 +43,13 @@ Settlement.ExpansionManager=class{
   for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(!this.isClaimed(xx,yy))return false;return true
  }
  isNearClaim(x,y,w,h){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++){if(this.isClaimed(xx,yy))return true;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(this.isClaimed(xx+dx,yy+dy))return true}return false}
- claimForBuilding(b){let rect=this.rectForBuilding(b);if(!rect)return false;let fresh=this.unclaimedCells(rect);if(!fresh.length)return false;this.claimedRects.push({...rect});this.claimed++;this.invalidate();this.lastClaim={rect,t:0,cells:fresh.length};let name=Settlement.BuildingDefs[b.type]?.name||"Frontier structure";this.game.bus.emit("territory:claimed",{rect,tiles:fresh.length,building:b,name,revision:this.revision});return true}
+ syncSourceClaim(b,announce=false){
+  if(!b?.complete)return false;
+  let old=this.claimedRects.find(r=>r.sourceId===b.id),rect=this.rectForBuilding(b);if(!rect)return false;
+  if(old&&this.sameRect(old,rect))return false;
+  this.removeSourceClaim(b.id);let fresh=this.unclaimedCells(rect),tag={...rect,sourceId:b.id,sourceType:b.type};this.claimedRects.push(tag);this.recalcCount();this.invalidate();if(announce){this.lastClaim={rect:tag,t:0,cells:fresh.length};let name=Settlement.BuildingDefs[b.type]?.name||"Frontier structure";this.game.bus.emit("territory:claimed",{rect:tag,tiles:fresh.length,building:b,name,revision:this.revision,moved:!!old})}return true
+ }
+ claimForBuilding(b){return this.syncSourceClaim(b,true)}
  claimForTower(b){return b?.type==="archery"?this.claimForBuilding(b):false}
  onBuildingComplete(b){if(b&&(b.type==="archery"||b.type==="hallOfLegends"))return this.claimForBuilding(b);return false}
  update(dt){if(this.lastClaim){this.lastClaim.t+=dt;if(this.lastClaim.t>2.2)this.lastClaim=null}}
