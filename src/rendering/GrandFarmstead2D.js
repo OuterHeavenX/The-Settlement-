@@ -5,24 +5,34 @@
  const round=(ctx,x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):(ctx.rect(x,y,w,h));ctx.fill();ctx.stroke()};
  p.drawGrandFarmstead=function(b){
   let ctx=this.ctx,T=64,x=b.x*T,y=b.y*T,w=b.w*T,h=b.h*T,t=performance.now()/1000;
-  ctx.save();ctx.lineWidth=4;ctx.fillStyle="#70805d";ctx.strokeStyle="#9a7b4f";round(ctx,x+8,y+8,w-16,h-16,18);
+  ctx.save();
+  // estate ground: layered grass, worn edges and subtle field variation
+  ctx.lineWidth=5;ctx.fillStyle="#71845a";ctx.strokeStyle="#9d7d4f";round(ctx,x+7,y+7,w-14,h-14,20);
+  ctx.globalAlpha=.14;for(let i=0;i<34;i++){let px=x+28+((i*137)%Math.max(40,w-56)),py=y+30+((i*83)%Math.max(40,h-60));ctx.fillStyle=i%3?"#31482e":"#c3a66a";ctx.beginPath();ctx.ellipse(px,py,10+(i%4)*3,4+(i%3)*2,(i%5)*.35,0,7);ctx.fill()}ctx.globalAlpha=1;
   // inner paths
-  ctx.strokeStyle="#9b8a68";ctx.lineWidth=18;ctx.globalAlpha=.72;ctx.beginPath();ctx.moveTo(x+w*.5,y+h*.12);ctx.lineTo(x+w*.5,y+h*.86);ctx.moveTo(x+w*.18,y+h*.5);ctx.lineTo(x+w*.82,y+h*.5);ctx.stroke();ctx.globalAlpha=1;
-  // paddock fences
-  ctx.strokeStyle="#6a4931";ctx.lineWidth=6;for(const r of[[.08,.1,.36,.34],[.56,.1,.36,.34],[.08,.56,.36,.34],[.56,.56,.36,.34]]){ctx.strokeRect(x+w*r[0],y+h*r[1],w*r[2],h*r[3])}
-  // farmhouse
-  ctx.fillStyle="#d8c7a3";ctx.strokeStyle="#392b32";ctx.lineWidth=5;ctx.fillRect(x+w*.37,y+h*.08,w*.26,h*.18);ctx.strokeRect(x+w*.37,y+h*.08,w*.26,h*.18);ctx.fillStyle="#3b3040";ctx.beginPath();ctx.moveTo(x+w*.35,y+h*.08);ctx.lineTo(x+w*.5,y+h*.015);ctx.lineTo(x+w*.65,y+h*.08);ctx.closePath();ctx.fill();ctx.fillStyle="#7b4a37";ctx.fillRect(x+w*.47,y+h*.17,w*.06,h*.09);
-  // barn
-  ctx.fillStyle="#6f3f3b";ctx.strokeStyle="#2e252c";ctx.fillRect(x+w*.67,y+h*.39,w*.2,h*.15);ctx.strokeRect(x+w*.67,y+h*.39,w*.2,h*.15);ctx.fillStyle="#302833";ctx.beginPath();ctx.moveTo(x+w*.65,y+h*.39);ctx.lineTo(x+w*.77,y+h*.32);ctx.lineTo(x+w*.89,y+h*.39);ctx.closePath();ctx.fill();
-  // trough/hay
-  ctx.fillStyle="#466875";ctx.fillRect(x+w*.15,y+h*.46,w*.14,h*.045);ctx.fillStyle="#b79a50";for(let i=0;i<5;i++)ctx.fillRect(x+w*(.72+i*.035),y+h*.74,16,24);
-  const animals=[
-   ["cow",.19,.22,4],["sheep",.70,.22,6],["pig",.2,.7,4],["horse",.7,.7,3],["goat",.62,.63,3],["chicken",.42,.42,8]
-  ];
-  const drawAnimal=(kind,ax,ay,i)=>{let bob=Math.sin(t*1.1+i*1.7)*2,dx=Math.sin(t*.18+i*2.3)*12,dy=Math.cos(t*.15+i*1.3)*8,X=x+w*ax+dx,Y=y+h*ay+dy+bob;ctx.save();ctx.translate(X,Y);ctx.strokeStyle="#2b2428";ctx.lineWidth=2;if(kind==="cow"){ctx.fillStyle="#d8d0bd";ctx.fillRect(-14,-8,28,16);ctx.fillStyle="#4d4246";ctx.fillRect(6,-13,12,10);ctx.fillRect(-9,-8,7,7)}else if(kind==="sheep"){ctx.fillStyle="#e5e1d2";ctx.beginPath();ctx.ellipse(0,0,13,9,0,0,7);ctx.fill();ctx.fillStyle="#4c4546";ctx.beginPath();ctx.arc(12,-2,5,0,7);ctx.fill()}else if(kind==="pig"){ctx.fillStyle="#c9877f";ctx.beginPath();ctx.ellipse(0,0,13,8,0,0,7);ctx.fill();ctx.beginPath();ctx.arc(12,-1,5,0,7);ctx.fill()}else if(kind==="horse"){ctx.fillStyle="#7a5138";ctx.fillRect(-13,-8,26,15);ctx.fillRect(7,-17,7,13);ctx.beginPath();ctx.arc(11,-18,5,0,7);ctx.fill()}else if(kind==="goat"){ctx.fillStyle="#b5aa91";ctx.fillRect(-10,-6,20,12);ctx.beginPath();ctx.arc(10,-7,5,0,7);ctx.fill()}else{ctx.fillStyle="#d6b04d";ctx.beginPath();ctx.arc(0,0,5,0,7);ctx.fill();ctx.fillStyle="#9a3f33";ctx.beginPath();ctx.arc(4,-4,2.5,0,7);ctx.fill()}ctx.restore()};
+  ctx.strokeStyle="#aa946e";ctx.lineWidth=20;ctx.globalAlpha=.78;ctx.beginPath();ctx.moveTo(x+w*.5,y+h*.11);ctx.lineTo(x+w*.5,y+h*.87);ctx.moveTo(x+w*.17,y+h*.5);ctx.lineTo(x+w*.83,y+h*.5);ctx.stroke();ctx.strokeStyle="#75664f";ctx.lineWidth=3;ctx.setLineDash([12,10]);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+  // paddock fences with posts
+  const pens=[[.075,.095,.365,.35],[.56,.095,.365,.35],[.075,.555,.365,.355],[.56,.555,.365,.355]];
+  ctx.strokeStyle="#65442f";ctx.lineWidth=7;for(const r of pens){let rx=x+w*r[0],ry=y+h*r[1],rw=w*r[2],rh=h*r[3];ctx.strokeRect(rx,ry,rw,rh);ctx.fillStyle="#493224";for(let q=0;q<=4;q++){ctx.fillRect(rx+rw*q/4-3,ry-4,6,14);ctx.fillRect(rx+rw*q/4-3,ry+rh-10,6,14)}for(let q=1;q<4;q++){ctx.fillRect(rx-4,ry+rh*q/4-3,14,6);ctx.fillRect(rx+rw-10,ry+rh*q/4-3,14,6)}}
+  // Gothic farmhouse: stone base, timber framing, windows, chimney
+  let fx=x+w*.355,fy=y+h*.065,fw=w*.29,fh=h*.205;ctx.fillStyle="#c8b894";ctx.strokeStyle="#352a31";ctx.lineWidth=5;ctx.fillRect(fx,fy,fw,fh);ctx.strokeRect(fx,fy,fw,fh);ctx.fillStyle="#554033";ctx.fillRect(fx+fw*.08,fy,8,fh);ctx.fillRect(fx+fw*.88,fy,8,fh);ctx.fillRect(fx+8,fy+fh*.42,fw-16,7);ctx.beginPath();ctx.moveTo(fx-14,fy);ctx.lineTo(fx+fw*.5,fy-h*.34);ctx.lineTo(fx+fw+14,fy);ctx.closePath();ctx.fillStyle="#342b3c";ctx.fill();ctx.strokeStyle="#241f28";ctx.stroke();ctx.fillStyle="#695247";ctx.fillRect(fx+fw*.72,fy-h*.26,14,h*.27);ctx.fillStyle="#f2c76d";for(const wx of[.22,.68]){ctx.fillRect(fx+fw*wx-10,fy+fh*.35,20,22);ctx.strokeStyle="#4b3833";ctx.strokeRect(fx+fw*wx-10,fy+fh*.35,20,22)}ctx.fillStyle="#71483a";ctx.fillRect(fx+fw*.45,fy+fh*.58,fw*.1,fh*.42);
+  // Gothic barn: larger roof, double doors, loft window
+  let bx=x+w*.655,by=y+h*.37,bw=w*.225,bh=h*.18;ctx.fillStyle="#70413d";ctx.strokeStyle="#30252c";ctx.lineWidth=5;ctx.fillRect(bx,by,bw,bh);ctx.strokeRect(bx,by,bw,bh);ctx.fillStyle="#30283a";ctx.beginPath();ctx.moveTo(bx-14,by);ctx.lineTo(bx+bw*.5,by-h*.34);ctx.lineTo(bx+bw+14,by);ctx.closePath();ctx.fill();ctx.strokeStyle="#211c25";ctx.stroke();ctx.fillStyle="#3f302e";ctx.fillRect(bx+bw*.32,by+bh*.38,bw*.36,bh*.62);ctx.strokeStyle="#b08b62";ctx.strokeRect(bx+bw*.32,by+bh*.38,bw*.36,bh*.62);ctx.beginPath();ctx.moveTo(bx+bw*.32,by+bh*.38);ctx.lineTo(bx+bw*.68,by+bh);ctx.moveTo(bx+bw*.68,by+bh*.38);ctx.lineTo(bx+bw*.32,by+bh);ctx.stroke();ctx.fillStyle="#e2b95e";ctx.beginPath();ctx.arc(bx+bw*.5,by+bh*.12,7,0,7);ctx.fill();
+  // troughs, hay, barrels, sacks, wheelbarrow-style clutter
+  ctx.fillStyle="#456b78";ctx.fillRect(x+w*.14,y+h*.455,w*.15,h*.045);ctx.strokeStyle="#263f48";ctx.strokeRect(x+w*.14,y+h*.455,w*.15,h*.045);ctx.fillStyle="#b99b4e";for(let i=0;i<6;i++)ctx.fillRect(x+w*(.70+i*.034),y+h*.745,18,25);ctx.fillStyle="#76513a";for(const a of[[.32,.31],[.83,.58],[.30,.82]]){ctx.beginPath();ctx.arc(x+w*a[0],y+h*a[1],10,0,7);ctx.fill();ctx.strokeStyle="#3d2c24";ctx.stroke()}ctx.fillStyle="#d2c08a";for(const a of[[.34,.34],[.80,.61],[.25,.79]]){ctx.beginPath();ctx.ellipse(x+w*a[0],y+h*a[1],9,13,.2,0,7);ctx.fill()}
+  // mud patch and little pond/trough area
+  ctx.globalAlpha=.62;ctx.fillStyle="#745a45";ctx.beginPath();ctx.ellipse(x+w*.20,y+h*.73,w*.105,h*.065,-.1,0,7);ctx.fill();ctx.fillStyle="#507986";ctx.beginPath();ctx.ellipse(x+w*.205,y+h*.475,w*.075,h*.025,0,0,7);ctx.fill();ctx.globalAlpha=1;
+  const animals=[["cow",.19,.22,4],["sheep",.70,.22,6],["pig",.2,.7,4],["horse",.7,.7,3],["goat",.62,.63,3],["chicken",.42,.42,8]];
+  const drawAnimal=(kind,ax,ay,i)=>{let bob=Math.sin(t*1.1+i*1.7)*1.8,dx=Math.sin(t*.18+i*2.3)*12,dy=Math.cos(t*.15+i*1.3)*8,X=x+w*ax+dx,Y=y+h*ay+dy+bob,flip=Math.sin(i*3.1)>0?1:-1;ctx.save();ctx.translate(X,Y);ctx.scale(flip,1);ctx.strokeStyle="#292329";ctx.lineWidth=2.2;
+   if(kind==="cow"){ctx.fillStyle="#e2d9c4";ctx.beginPath();ctx.ellipse(0,0,17,10,0,0,7);ctx.fill();ctx.stroke();ctx.fillStyle="#4b4144";ctx.beginPath();ctx.arc(16,-5,7,0,7);ctx.fill();ctx.fillRect(-9,-6,7,7);ctx.fillRect(3,1,7,6);ctx.strokeStyle="#453638";for(const lx of[-10,8]){ctx.beginPath();ctx.moveTo(lx,7);ctx.lineTo(lx,16);ctx.stroke()}ctx.beginPath();ctx.moveTo(-16,-2);ctx.lineTo(-23,-9);ctx.stroke()}
+   else if(kind==="sheep"){ctx.fillStyle="#eee8d6";for(const q of[[-8,0],[0,-3],[8,0],[-3,5],[6,5]]){ctx.beginPath();ctx.arc(q[0],q[1],8,0,7);ctx.fill()}ctx.fillStyle="#494143";ctx.beginPath();ctx.ellipse(15,0,6,5,0,0,7);ctx.fill();ctx.strokeStyle="#494143";for(const lx of[-7,7]){ctx.beginPath();ctx.moveTo(lx,7);ctx.lineTo(lx,14);ctx.stroke()}}
+   else if(kind==="pig"){ctx.fillStyle="#d18b83";ctx.beginPath();ctx.ellipse(0,0,16,9,0,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(15,-1,6,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(-15,-2);ctx.quadraticCurveTo(-23,-10,-18,-15);ctx.stroke()}
+   else if(kind==="horse"){ctx.fillStyle="#80543a";ctx.beginPath();ctx.ellipse(-2,0,18,9,0,0,7);ctx.fill();ctx.stroke();ctx.fillRect(9,-17,7,16);ctx.beginPath();ctx.ellipse(14,-18,7,5,-.2,0,7);ctx.fill();ctx.strokeStyle="#392b29";for(const lx of[-11,8]){ctx.beginPath();ctx.moveTo(lx,7);ctx.lineTo(lx,19);ctx.stroke()}ctx.beginPath();ctx.moveTo(-18,-3);ctx.lineTo(-27,8);ctx.stroke()}
+   else if(kind==="goat"){ctx.fillStyle="#bdb198";ctx.beginPath();ctx.ellipse(0,0,14,8,0,0,7);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(13,-6,6,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(14,-11);ctx.lineTo(10,-18);ctx.moveTo(17,-10);ctx.lineTo(20,-17);ctx.stroke()}
+   else{ctx.fillStyle="#d8b14d";ctx.beginPath();ctx.ellipse(0,1,6,5,0,0,7);ctx.fill();ctx.beginPath();ctx.arc(5,-4,4,0,7);ctx.fill();ctx.fillStyle="#a43e34";ctx.beginPath();ctx.arc(6,-8,2.5,0,7);ctx.fill();ctx.strokeStyle="#6b4b2a";ctx.beginPath();ctx.moveTo(-1,5);ctx.lineTo(-2,10);ctx.moveTo(3,5);ctx.lineTo(4,10);ctx.stroke()}ctx.restore()};
   for(const[kind,ax,ay,count]of animals)for(let i=0;i<count;i++){let cols=Math.ceil(Math.sqrt(count)),ox=(i%cols-cols/2)*.045,oy=(Math.floor(i/cols)-1)*.04;drawAnimal(kind,ax+ox,ay+oy,i+kind.length)}
-  // plaque
-  ctx.fillStyle="#241c24dd";ctx.strokeStyle="#d7b26d";ctx.lineWidth=3;round(ctx,x+w*.29,y+h*.88,w*.42,38,8);ctx.fillStyle="#f7ebd5";ctx.font="bold 20px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("GRAND FARMSTEAD",x+w*.5,y+h*.88+19);
+  // estate sign only; TownIdentity owns the interactive building plaque
+  ctx.fillStyle="#241c24dd";ctx.strokeStyle="#d7b26d";ctx.lineWidth=3;round(ctx,x+w*.30,y+h*.885,w*.40,34,8);ctx.fillStyle="#f7ebd5";ctx.font="bold 18px Georgia";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("GRAND FARMSTEAD",x+w*.5,y+h*.885+17);
   ctx.restore();
  };
  p.building=function(b){if(b?.type==="grandFarmstead"&&b.complete){this.drawGrandFarmstead(b);return}return baseBuilding.call(this,b)};
