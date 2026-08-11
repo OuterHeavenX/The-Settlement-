@@ -1,0 +1,7 @@
+THE SETTLEMENT RECOVERY BASELINE
+
+Runtime source: commit 94f3adec49e7de0a81262129761f773c9073808a
+Version: v0.2.8
+Purpose: isolated recovery preview only.
+No runtime game file has been modified on this branch.
+DO NOT MERGE into main.
