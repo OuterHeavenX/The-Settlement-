@@ -10,9 +10,10 @@
     for(let gx=1;gx<rect.w;gx++){ctx.beginPath();ctx.moveTo(a.x+gx*tile,a.y);ctx.lineTo(a.x+gx*tile,a.y+bh);ctx.stroke()}
     for(let gy=1;gy<rect.h;gy++){ctx.beginPath();ctx.moveTo(a.x,a.y+gy*tile);ctx.lineTo(a.x+bw,a.y+gy*tile);ctx.stroke()}
     ctx.strokeStyle="#cdf0a6dd";ctx.lineWidth=2.5*D;ctx.setLineDash([9*D,7*D]);ctx.lineDashOffset=-(t*26)%16;ctx.strokeRect(a.x,a.y,bw,bh);ctx.setLineDash([]);ctx.lineDashOffset=0;
-    let fresh=g.expansion.unclaimedCells(rect).length;
-    ctx.fillStyle="#eafbd6";ctx.font=`bold ${12*D}px Georgia`;ctx.textAlign="center";ctx.textBaseline="bottom";
-    ctx.fillText(`CLAIMS ${rect.w}×${rect.h} — ${fresh} NEW TILES`,a.x+bw/2,a.y-6*D)}}
+    let label="";
+    if(p.moving){let rs=g.expansion.relocationStatus(p.moving,p.hover.x,p.hover.y);label=rs.ok?`MOVE ${rect.w}×${rect.h} — +${rs.gained} / −${rs.lost} TILES`:`MOVE ${rect.w}×${rect.h}`}
+    else{let fresh=g.expansion.unclaimedCells(rect).length;label=`CLAIMS ${rect.w}×${rect.h} — ${fresh} NEW TILES`}
+    ctx.fillStyle="#eafbd6";ctx.font=`bold ${12*D}px Georgia`;ctx.textAlign="center";ctx.textBaseline="bottom";ctx.fillText(label,a.x+bw/2,a.y-6*D)}}
   for(let cell of v.cells||[]){let s=worldToScreen(cell.x*T,cell.y*T);ctx.fillStyle=cell.ok?"#a9df6a38":"#d95b4f55";ctx.fillRect(s.x,s.y,tile,tile);ctx.strokeStyle=cell.ok?"#e5f7a5cc":"#ffb0a5ee";ctx.lineWidth=2*D;ctx.strokeRect(s.x+1,s.y+1,tile-2,tile-2);ctx.fillStyle=cell.ok?"#f3ffd0":"#ffe1dc";ctx.font=`bold ${Math.max(11,14*cam.zoom)*D}px Georgia`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(cell.ok?"✓":"✕",s.x+tile/2,s.y+tile/2)}
   if(v.entrance){let e=worldToScreen((v.entrance.x+.5)*T,(v.entrance.y+.5)*T);ctx.globalAlpha=1;ctx.beginPath();ctx.arc(e.x,e.y,10*D,0,Math.PI*2);ctx.fillStyle="#f6d980";ctx.fill();ctx.strokeStyle="#4b321d";ctx.lineWidth=2*D;ctx.stroke();ctx.fillStyle="#3e2a17";ctx.font=`bold ${10*D}px Arial`;ctx.fillText("DOOR",e.x,e.y-16*D)}ctx.restore()};
 })();
