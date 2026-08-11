@@ -24,7 +24,8 @@ Settlement.ExpansionManager=class{
  }
  rectForBuilding(b){return b?this.claimRectFor(b.type,b.x,b.y,b.level||1):null}
  invalidate(){this.revision=(this.revision||0)+1;this._set=null;this._setRev=-1;return this.revision}
- claimedTiles(){if(this._set&&this._setRev===this.revision)return this._set;let s=new Set();for(const r of this.claimedRects)for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)s.add(x+","+y);this._set=s;this._setRev=this.revision;return s}
+ tilesFromRects(rects){let s=new Set();for(const r of rects||[])for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)s.add(x+","+y);return s}
+ claimedTiles(){if(this._set&&this._setRev===this.revision)return this._set;this._set=this.tilesFromRects(this.claimedRects);this._setRev=this.revision;return this._set}
  isClaimed(x,y){return this.claimedTiles().has(x+","+y)}
  unclaimedCells(rect){let out=[];if(!rect)return out;for(let y=rect.y;y<rect.y+rect.h;y++)for(let x=rect.x;x<rect.x+rect.w;x++)if(!this.isClaimed(x,y))out.push({x,y});return out}
  sameRect(a,b){return !!(a&&b&&a.x===b.x&&a.y===b.y&&a.w===b.w&&a.h===b.h)}
@@ -41,13 +42,29 @@ Settlement.ExpansionManager=class{
   this.recalcCount();if(changed)this.invalidate();return changed
  }
  removeSourceClaim(id){let before=this.claimedRects.length;this.claimedRects=this.claimedRects.filter(r=>r.sourceId!==id);if(this.claimedRects.length!==before){this.recalcCount();this.invalidate();return true}return false}
- canBuild(type,x,y,w,h){
+ isNearSet(set,x,y,w=1,h=1){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++){if(set.has(xx+","+yy))return true;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(set.has((xx+dx)+","+(yy+dy)))return true}return false}
+ relocationStatus(b,x,y){
+  if(!b||b.type!=="archery")return{ok:false,reason:"ONLY ARCHERY TOWERS CAN RELOCATE TERRITORY"};
+  let remaining=this.claimedRects.filter(r=>r.sourceId!==b.id),secured=this.tilesFromRects(remaining);
+  if(!this.isNearSet(secured,x,y,1,1))return{ok:false,reason:"NEW TOWER MUST TOUCH EXISTING SECURED LAND"};
+  let next=this.claimRectFor("archery",x,y,b.level||1);if(!next)return{ok:false,reason:"INVALID TOWER CLAIM"};
+  let after=this.tilesFromRects([...remaining,{...next,sourceId:b.id,sourceType:"archery"}]);
+  for(const other of this.game.buildings.list){
+   if(!other.complete||other.id===b.id)continue;
+   let d=Settlement.BuildingDefs[other.type];
+   if(d?.road||d?.wall||d?.gate||d?.claimsTerritory||d?.remoteClaim||["road","wall","gate","archery","hallOfLegends"].includes(other.type))continue;
+   for(let yy=other.y;yy<other.y+other.h;yy++)for(let xx=other.x;xx<other.x+other.w;xx++)if(!after.has(xx+","+yy))return{ok:false,reason:`MOVE WOULD ABANDON ${String(d?.name||"DEVELOPED LAND").toUpperCase()}`};
+  }
+  return{ok:true,reason:"VALID TOWER RELOCATION",claim:next}
+ }
+ canBuild(type,x,y,w,h,moving=null){
   let d=Settlement.BuildingDefs[type];
+  if(type==="archery"&&moving?.id)return this.relocationStatus(moving,x,y).ok;
   if(d?.remoteClaim){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(!this.game.grid.inBounds(xx,yy))return false;return true}
   if(["archery","wall","gate","road"].includes(type))return this.isNearClaim(x,y,w,h);
   for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)if(!this.isClaimed(xx,yy))return false;return true
  }
- isNearClaim(x,y,w,h){for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++){if(this.isClaimed(xx,yy))return true;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(this.isClaimed(xx+dx,yy+dy))return true}return false}
+ isNearClaim(x,y,w,h){return this.isNearSet(this.claimedTiles(),x,y,w,h)}
  syncSourceClaim(b,announce=false){
   if(!b?.complete)return false;
   let old=this.claimedRects.find(r=>r.sourceId===b.id),rect=this.rectForBuilding(b);if(!rect)return false;
@@ -63,6 +80,6 @@ Settlement.ExpansionManager=class{
  status(){return{complete:false,allClaimed:false,region:null}}
  requirements(){return[]}
  tryClaim(){return false}
- progressText(){return"Build an Archery Tower near your border, or found the Hall of Legends as a distant stronghold."}
+ progressText(){return"Build or safely relocate an Archery Tower along your border, or found the Hall of Legends as a distant stronghold."}
  totalTiles(){return this.claimedTiles().size}
 };
