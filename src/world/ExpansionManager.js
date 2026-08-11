@@ -48,14 +48,10 @@ Settlement.ExpansionManager=class{
   let remaining=this.claimedRects.filter(r=>r.sourceId!==b.id),secured=this.tilesFromRects(remaining);
   if(!this.isNearSet(secured,x,y,1,1))return{ok:false,reason:"NEW TOWER MUST TOUCH EXISTING SECURED LAND"};
   let next=this.claimRectFor("archery",x,y,b.level||1);if(!next)return{ok:false,reason:"INVALID TOWER CLAIM"};
-  let after=this.tilesFromRects([...remaining,{...next,sourceId:b.id,sourceType:"archery"}]);
-  for(const other of this.game.buildings.list){
-   if(!other.complete||other.id===b.id)continue;
-   let d=Settlement.BuildingDefs[other.type];
-   if(d?.road||d?.wall||d?.gate||d?.claimsTerritory||d?.remoteClaim||["road","wall","gate","archery","hallOfLegends"].includes(other.type))continue;
-   for(let yy=other.y;yy<other.y+other.h;yy++)for(let xx=other.x;xx<other.x+other.w;xx++)if(!after.has(xx+","+yy))return{ok:false,reason:`MOVE WOULD ABANDON ${String(d?.name||"DEVELOPED LAND").toUpperCase()}`};
-  }
-  return{ok:true,reason:"VALID TOWER RELOCATION",claim:next}
+  let before=this.claimedTiles(),after=this.tilesFromRects([...remaining,{...next,sourceId:b.id,sourceType:"archery"}]),gained=0,lost=0;
+  for(const k of after)if(!before.has(k))gained++;
+  for(const k of before)if(!after.has(k))lost++;
+  return{ok:true,reason:"VALID TOWER RELOCATION",claim:next,gained,lost,net:gained-lost}
  }
  canBuild(type,x,y,w,h,moving=null){
   let d=Settlement.BuildingDefs[type];
