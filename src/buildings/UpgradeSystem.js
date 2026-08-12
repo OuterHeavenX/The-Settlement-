@@ -44,12 +44,12 @@ Settlement.UpgradeSystem=class{
    if(!b.upgrading||!this.handles(b))continue;
    b.upgrading.progress=Math.min(1,b.upgrading.progress+dt/(b.upgrading.duration||30));
    if(b.upgrading.progress<1)continue;
-   let target=b.upgrading.targetLevel,xp=b.upgrading.xpReward||0;
+   let target=b.upgrading.targetLevel,xp=b.upgrading.xpReward||0,oldEra=b.type==="mainHall"?Settlement.CivilizationEras?.byLevel(b.level||1):null;
    b.level=target;b.upgrading=null;
    this.game.xp.add(xp);
    let d=Settlement.BuildingDefs[b.type],lv=this.current(b);
    this.game.effects.float(b.x,b.y,(lv?.name||d.name)+"  +"+xp+" XP");
-   this.game.bus.emit("building:upgraded",b);
+   this.game.bus.emit("building:upgraded",b);let newEra=b.type==="mainHall"?Settlement.CivilizationEras?.byLevel(b.level||1):null;if(oldEra&&newEra&&oldEra.id!==newEra.id){this.game.juice?.emit("dust",(b.x+b.w/2)*64,(b.y+b.h/2)*64,24);this.game.juice?.celebrate(`A NEW AGE HAS BEGUN — ${newEra.name.toUpperCase()}`,"🏛️");this.game.bus.emit("civilization:eraChanged",{from:oldEra,to:newEra,building:b})}
    this.game.bus.emit("toast","🏛️ "+(lv?.name||d.name)+" completed!");
   }
  }
