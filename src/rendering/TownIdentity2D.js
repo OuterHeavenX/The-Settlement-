@@ -75,3 +75,4 @@
   if(typeof baseInspect==="function")U.inspect=function(b){let r=baseInspect.call(this,b);let id=this.game.renderer?.townIdentity;if(!id){this.game.renderer.townIdentity=new TownIdentity2D(this.game.renderer);id=this.game.renderer.townIdentity}id.select(b);return r}
  }
 })();
+document.write('<script src="src/rendering/WonderWorld2D.js?v=0.18.0-wonders"><\/script>');
