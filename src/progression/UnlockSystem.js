@@ -4,3 +4,4 @@ Settlement.UnlockSystem=class{
  onLevelUp(from,to){let items=[];for(let level=from+1;level<=to;level++)items.push(...this.itemsForLevel(level));if(items.length)this.game.ui?.showUnlocks(to,items)}
  isBuildingUnlocked(def){return !def.requiredTownLevel||this.game.xp.level>=def.requiredTownLevel||this.game.buildings.list.some(b=>b.type===def.id)}
 };
+document.write('<script src="src/progression/WonderSystem.js?v=0.18.0-wonders"><\/script>');
