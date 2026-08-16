@@ -288,10 +288,20 @@ export class World3D {
      1 / 5 / 10 / 15 without needing fifteen separate models. */
   tierOf(level) { const l = level || 1; return l >= 15 ? 4 : l >= 10 ? 3 : l >= 5 ? 2 : 1; }
 
+  buildWonder(b) {
+    const g=new THREE.Group(),w=b.w*T,dp=b.h*T,stone=this.mat("s",0x858078),bronze=this.mat("s",0x8b6845,{metalness:.58,roughness:.46}),dark=this.mat("s",0x35333a),wood=this.mat("s",PAL.timberLight),water=this.mat("s",0x3d91a5,{metalness:.12,roughness:.28}),gold=this.mat("s",PAL.gold,{metalness:.55,roughness:.4}),p=Math.max(.03,Math.min(1,b.progress||0));
+    this.part(this.box(w*.92,10,dp*.92),stone,0,5,0,g);this.part(this.box(w*.76,12,dp*.76),dark,0,16,0,g);
+    if(!b.complete){let rise=210*p;this.part(this.box(w*.48,Math.max(8,rise),dp*.48),stone,0,22+rise/2,0,g);for(let sx of[-1,1])for(let sz of[-1,1]){this.part(this.box(6,230,6),wood,sx*w*.4,120,sz*dp*.4,g);for(let y=45;y<220;y+=42)this.part(this.box(w*.8,4,4),wood,0,y,sz*dp*.4,g)}g.position.set((b.x+b.w/2)*T,0,(b.y+b.h/2)*T);return g}
+    if(b.type==="athena_temple"){let cols=8;for(let side of[-1,1])for(let i=0;i<cols;i++){let x=-w*.34+i*w*.68/(cols-1);this.part(this.box(13,150,13),stone,x,96,side*dp*.28,g);this.part(this.box(19,7,19),gold,x,174,side*dp*.28,g)}this.part(this.box(w*.78,22,dp*.7),stone,0,184,0,g);let roof=this.part(this.cone(w*.52,80,4),dark,0,230,0,g);roof.scale.z=dp/w;this.part(this.box(34,112,28),bronze,0,91,0,g);this.part(this.cone(23,32,8),gold,0,163,0,g)}
+    else{this.part(this.box(w*.42,24,dp*.42),stone,0,34,0,g);if(b.type==="poseidon_monument"){this.part(this.box(w*.66,8,dp*.66),water,0,29,0,g);this.part(this.box(52,180,42),bronze,0,130,0,g);this.part(this.cone(35,54,8),bronze,0,247,0,g);this.part(this.box(8,300,8),gold,w*.19,170,0,g);for(let z of[-18,0,18])this.part(this.box(6,52,6),gold,w*.19,334,z,g)}else{this.part(this.box(62,210,48),bronze,0,145,0,g);this.part(this.cone(42,62,8),bronze,0,284,0,g);this.part(this.box(9,360,9),gold,w*.2,205,0,g);this.part(this.box(100,16,76),dark,-w*.18,175,0,g);for(let x of[-w*.3,w*.3])this.part(this.cone(14,28,8),gold,x,50,dp*.3,g)}}
+    g.position.set((b.x+b.w/2)*T,0,(b.y+b.h/2)*T);return g;
+  }
+
   buildStructure(b) {
     const g = new THREE.Group();
     const d = Settlement.BuildingDefs[b.type];
     if (!d) return g;
+    if (d.wonder) return this.buildWonder(b);
     const w = b.w * T, dp = b.h * T, tier = this.tierOf(b.level);
     const stone = this.mat("s", PAL.stone), dark = this.mat("s", PAL.slate),
       timber = this.mat("s", PAL.timber), light = this.mat("s", PAL.timberLight),

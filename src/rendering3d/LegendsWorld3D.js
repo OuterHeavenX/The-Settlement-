@@ -1,5 +1,5 @@
 import * as THREE from "../../vendor/three/three.module.min.js";
-import {PermanentDayWorld3D} from "./PermanentDayWorld3D.js?v=0.14.0-legends";
+import {PermanentDayWorld3D} from "./PermanentDayWorld3D.js?v=0.18.0-wonders";
 const T=64;
 export class LegendsWorld3D extends PermanentDayWorld3D{
  refreshGround(){let rev=this.game.expansion?.revision||0;if(this._legendExpansionRevision!==rev){this._legendExpansionRevision=rev;this.groundKey=null}return super.refreshGround()}

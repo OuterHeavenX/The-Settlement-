@@ -12,7 +12,7 @@ export class PermanentDayWorld3D extends LivingWorldCheckpointWorld3D{
  init(){const ok=super.init();if(!ok)return false;if(this.live)this.live.phase=()=>"DAY";this.buildWeather();console.info("The Settlement: permanent-day direct renderer active");return true}
  cyl(r1,r2,h,seg=8){const k=`pd-c${r1}|${r2}|${h}|${seg}`;if(!this._amenityGeo.has(k))this._amenityGeo.set(k,new THREE.CylinderGeometry(r1,r2,h,seg));return this._amenityGeo.get(k)}
  sph(r,ws=8,hs=6){const k=`pd-s${r}|${ws}|${hs}`;if(!this._amenityGeo.has(k))this._amenityGeo.set(k,new THREE.SphereGeometry(r,ws,hs));return this._amenityGeo.get(k)}
- part(g,geo,mat,x=0,y=0,z=0,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=false;m.receiveShadow=false;g.add(m);return m}
+ part(a,b,c,d=0,e=0,f=0,h=0,i=0,j=0){let g,geo,mat,x,y,z,rx,ry,rz;if(a?.isGroup){g=a;geo=b;mat=c;x=d;y=e;z=f;rx=h;ry=i;rz=j}else{geo=a;mat=b;x=c||0;y=d;z=e;g=f;rx=h;ry=i;rz=j}const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=false;m.receiveShadow=false;g.add(m);return m}
  buildStructure(b){const d=Settlement.BuildingDefs[b.type];if(!b.complete)return super.buildStructure(b);if(d?.amenity)return this.makeAmenity(b,d);if(d?.defenseTurret)return this.makeTurret(b);return super.buildStructure(b)}
  makeAmenity(b,d){
   const g=new THREE.Group(),v=d.amenityMeta?.visualType,w=b.w*T,h=b.h*T;
