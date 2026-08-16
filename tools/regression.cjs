@@ -17,6 +17,10 @@ const PHONE={...devices['Pixel 5'],viewport:{width:390,height:844},isMobile:true
  await page.goto(BASE_URL,{waitUntil:'load'});await wait(500);
  check('BOOT',await G(()=>!!window.game&&!!Settlement.BuildingDefs));
  await page.click('#start');await wait(250);
+ const storage=await G(()=>{let g=game,old={...g.resources.v},cap=g.resources.baseCap;g.buildings.list=[];g.resources.baseCap=700;g.resources.v={...g.resources.v,stone:700,wood:100,food:100};let a=g.resources.add({wood:50}),multi=g.resources.add({wood:600,stone:20,food:20});let over={...g.resources.v,wood:725};g.resources.v=over;g.resources.add({wood:10});let preserved=g.resources.v.wood;g.resources.v={...g.resources.v,stone:700,wood:100,food:100};let offline=g.save.storeOfflineGain({stone:20,wood:50,food:40});let out={a,multi,after:{...g.resources.v},offline,preserved};g.resources.v=old;g.resources.baseCap=cap;return out});
+ check('PER-RESOURCE CAPACITY A/D',storage.a.wood===50&&storage.multi.wood===550&&!storage.multi.stone&&storage.multi.food===20,JSON.stringify(storage));
+ check('OVER-CAP SAVE PRESERVED',storage.preserved===725,`wood ${storage.preserved}`);
+ check('OFFLINE CAPACITY INDEPENDENT',storage.offline.wood===50&&storage.offline.food===40&&!storage.offline.stone,JSON.stringify(storage.offline));
  check('MOBILE RESOURCE CREST',await page.isVisible('#hud-orb'));
  check('QUEST BANNER REMOVED ON MOBILE',!(await page.isVisible('#questbox')));
  await page.click('#hud-orb');await wait(120);
