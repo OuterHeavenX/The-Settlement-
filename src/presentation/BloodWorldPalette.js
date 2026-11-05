@@ -18,7 +18,39 @@ Settlement.BloodWorldPalette={
  class BloodMedievalWorldArt extends Base{
   constructor(renderer){super(renderer);this.palette={...this.palette,grass:P.terrain,claimed:P.silver,dirt:P.dirt,dirtLight:P.dirtLight,wood:P.timber,woodDark:P.timberDark,woodLight:P.timberLight,plaster:P.plaster,plasterLight:P.plasterLight,stone:P.stone,stoneDark:P.stoneDark,roof:P.roof,roof2:P.roofPrestige,thatch:P.thatch,iron:P.iron,window:P.window}}
   seasonPalette(){let i=this.game.clock?.seasonIndex||0;if(this._bloodSP&&this._bloodSPI===i)return this._bloodSP;let grass=[P.spring,P.summer,P.autumn,P.winter][i]||P.spring;this._bloodSPI=i;this._bloodSP={grass,blade:P.blade,pebble:P.pebble,bush:P.bush,flower:i<2?P.flower:null,flower2:i<2?P.flower2:null,litter:i===2?P.litter:i===3?"#d5d8dacc":null};return this._bloodSP}
-  terrainTile(x,y,claimed){let c=this.ctx,T=this.T,p=this.seasonPalette(),h=this.hash(x,y),base=p.grass[Math.floor(h*p.grass.length)%p.grass.length];c.fillStyle=base;c.fillRect(x*T,y*T,T,T);let q=this.detailDensity();if(q>0){let d=this.hash(x,y,4);if(d<.16*q){c.fillStyle=p.blade;for(let i=0;i<3;i++)c.fillRect(x*T+10+this.hash(x,y,10+i)*44,y*T+12+this.hash(x,y,20+i)*42,2,5)}if(d>1-.18*q){c.fillStyle=p.pebble;c.beginPath();c.arc(x*T+14+this.hash(x,y,30)*34,y*T+18+this.hash(x,y,31)*28,2.2,0,7);c.fill()}if(p.flower&&d>.42&&d<.42+.09*q){c.fillStyle=this.hash(x,y,40)>.5?p.flower:p.flower2;for(let i=0;i<2;i++){c.beginPath();c.arc(x*T+16+this.hash(x,y,50+i)*36,y*T+16+this.hash(x,y,60+i)*36,1.9,0,7);c.fill()}}if(p.litter&&d>.24&&d<.24+.14*q){c.fillStyle=p.litter;for(let i=0;i<3;i++)c.fillRect(x*T+8+this.hash(x,y,70+i)*46,y*T+10+this.hash(x,y,80+i)*44,3,2)}}if(claimed){c.fillStyle="#8c789515";c.fillRect(x*T,y*T,T,T)}else{if(q>0&&this.hash(x,y,4)<.09*q){c.fillStyle=p.bush;c.beginPath();c.arc(x*T+18,y*T+23,7,0,7);c.fill()}c.fillStyle="#0e111238";c.fillRect(x*T,y*T,T,T)}}
+  /* Smooth low-frequency tone field. Lattice samples are SHARED by neighbouring
+     tiles and interpolated across them, so the ground shade drifts by a fraction
+     of a step from one tile to the next. Picking a palette entry per tile at
+     random — what this used to do — made every 64px tile jump several shades
+     away from its neighbour, which is what read as a checkerboard. */
+  meadowTone(x,y,salt=0,period=6){
+   let fx=x/period,fy=y/period,ix=Math.floor(fx),iy=Math.floor(fy),
+       tx=fx-ix,ty=fy-iy,ex=tx*tx*(3-2*tx),ey=ty*ty*(3-2*ty),
+       a=this.hash(ix,iy,900+salt),b=this.hash(ix+1,iy,900+salt),
+       u=this.hash(ix,iy+1,900+salt),v=this.hash(ix+1,iy+1,900+salt),
+       top=a+(b-a)*ex,bot=u+(v-u)*ex;
+   return top+(bot-top)*ey;
+  }
+  /* Blend two "#rrggbb" entries. Cached per pair+step so a pan does not reparse
+     the palette thousands of times a second. */
+  mixHex(a,b,t){
+   let key=a+b+(t=Math.round(t*32)/32);
+   let hit=(this._mixCache||(this._mixCache=new Map())).get(key);if(hit)return hit;
+   let pa=parseInt(a.slice(1,7),16),pb=parseInt(b.slice(1,7),16),
+       r=Math.round(((pa>>16&255)*(1-t)+(pb>>16&255)*t)),
+       g=Math.round(((pa>>8&255)*(1-t)+(pb>>8&255)*t)),
+       bl=Math.round(((pa&255)*(1-t)+(pb&255)*t)),
+       out="#"+(1<<24|r<<16|g<<8|bl).toString(16).slice(1);
+   if(this._mixCache.size>4096)this._mixCache.clear();
+   this._mixCache.set(key,out);return out;
+  }
+  /* Walk the season ramp with the smooth field instead of indexing it randomly. */
+  grassAt(x,y,ramp){
+   let t=this.meadowTone(x,y,0,6)*.68+this.meadowTone(x,y,7,2)*.32,
+       s=Math.min(.9999,Math.max(0,t))*(ramp.length-1),i=Math.floor(s);
+   return this.mixHex(ramp[i],ramp[Math.min(ramp.length-1,i+1)],s-i);
+  }
+  terrainTile(x,y,claimed){let c=this.ctx,T=this.T,p=this.seasonPalette(),base=this.grassAt(x,y,p.grass);c.fillStyle=base;c.fillRect(x*T,y*T,T,T);let q=this.detailDensity();if(q>0){let d=this.hash(x,y,4);if(d<.16*q){c.fillStyle=p.blade;for(let i=0;i<3;i++)c.fillRect(x*T+10+this.hash(x,y,10+i)*44,y*T+12+this.hash(x,y,20+i)*42,2,5)}if(d>1-.18*q){c.fillStyle=p.pebble;c.beginPath();c.arc(x*T+14+this.hash(x,y,30)*34,y*T+18+this.hash(x,y,31)*28,2.2,0,7);c.fill()}if(p.flower&&d>.42&&d<.42+.09*q){c.fillStyle=this.hash(x,y,40)>.5?p.flower:p.flower2;for(let i=0;i<2;i++){c.beginPath();c.arc(x*T+16+this.hash(x,y,50+i)*36,y*T+16+this.hash(x,y,60+i)*36,1.9,0,7);c.fill()}}if(p.litter&&d>.24&&d<.24+.14*q){c.fillStyle=p.litter;for(let i=0;i<3;i++)c.fillRect(x*T+8+this.hash(x,y,70+i)*46,y*T+10+this.hash(x,y,80+i)*44,3,2)}}if(claimed){c.fillStyle="#8c789515";c.fillRect(x*T,y*T,T,T)}else{if(q>0&&this.hash(x,y,4)<.09*q){c.fillStyle=p.bush;c.beginPath();c.arc(x*T+18,y*T+23,7,0,7);c.fill()}c.fillStyle="#0e111238";c.fillRect(x*T,y*T,T,T)}}
   timberFrame(x,y,w,h,level=1){let c=this.ctx,p=this.palette;c.fillStyle=p.woodDark;c.fillRect(x,y,w,h);c.fillStyle=level>=3?p.plasterLight:p.plaster;c.fillRect(x+6,y+5,w-12,h-8);c.strokeStyle=p.wood;c.lineWidth=4;c.strokeRect(x+7,y+6,w-14,h-10);c.beginPath();c.moveTo(x+8,y+7);c.lineTo(x+w-8,y+h-5);c.moveTo(x+w-8,y+7);c.lineTo(x+8,y+h-5);c.stroke()}
   roof(x,y,w,h,kind="shingle",level=1){let c=this.ctx,p=this.palette;c.fillStyle=kind==="thatch"?p.thatch:(level>=3?p.roof2:p.roof);c.beginPath();c.moveTo(x-5,y+h*.34);c.lineTo(x+w*.5,y);c.lineTo(x+w+5,y+h*.34);c.lineTo(x+w-4,y+h*.41);c.lineTo(x+4,y+h*.41);c.closePath();c.fill();c.strokeStyle="#17151b";c.lineWidth=2;c.stroke();if(kind!=="thatch"){c.strokeStyle="#82707d55";for(let yy=y+8;yy<y+h*.32;yy+=8){c.beginPath();c.moveTo(x+8,yy);c.lineTo(x+w-8,yy);c.stroke()}}}
   door(x,y,w,h){let c=this.ctx;c.fillStyle="#302229";c.fillRect(x+w*.45,y+h*.58,w*.15,h*.28);c.fillStyle=P.silver;c.beginPath();c.arc(x+w*.56,y+h*.72,1.7,0,7);c.fill()}

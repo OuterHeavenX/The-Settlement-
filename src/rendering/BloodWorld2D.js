@@ -3,8 +3,11 @@ Settlement.BloodWorld2D=class extends Settlement.IndustryWorld2D{
  terrainTile(x,y,claimed){
   super.terrainTile(x,y,claimed);let c=this.ctx,T=this.T,g=this.game.gothicWorld,h=g?.hash?.(x,y,211)??.5,h2=g?.hash?.(x,y,212)??.5;
   c.save();
-  // Low-frequency tonal variation softens the visible development grid without changing tiles.
-  c.fillStyle=claimed?`rgba(64,49,70,${(.035+h*.028).toFixed(3)})`:`rgba(15,13,18,${(.075+h*.045).toFixed(3)})`;c.fillRect(x*T,y*T,T,T);
+  /* Tonal wash. The strength is drawn from the shared low-frequency field so it
+     drifts across the map; keying it off a per-tile hash (as it used to) stamped
+     a different alpha on every 64px square and drew the grid back on. */
+  let w=this.r?.worldArt?.meadowTone?.(x,y,33,9)??.5;
+  c.fillStyle=claimed?`rgba(64,49,70,${(.035+w*.028).toFixed(3)})`:`rgba(15,13,18,${(.075+w*.045).toFixed(3)})`;c.fillRect(x*T,y*T,T,T);
   c.globalAlpha=claimed?.09:.13;c.fillStyle=claimed?"#746454":"#2e342d";c.beginPath();c.arc(x*T+10+h*42,y*T+10+h2*42,claimed?1.2:1.6,0,7);c.fill();
   if(!claimed&&h>.78){c.globalAlpha=.08;c.strokeStyle="#777060";c.lineWidth=1;c.beginPath();c.moveTo(x*T+8+h2*26,y*T+45);c.lineTo(x*T+15+h2*28,y*T+39);c.stroke()}
   c.restore();
