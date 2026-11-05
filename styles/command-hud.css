@@ -47,7 +47,16 @@
 
  #toast-stack{top:var(--command-below)}
  #debug{top:var(--command-below)}
- #buildmenu,#panel{top:var(--command-below)}
+ /* Panels were pinned top AND bottom, so a build category holding one card
+    opened as a full-height sheet with ~1000px of empty black under it. They now
+    size to their contents and only stretch when there is enough to fill them. */
+ #buildmenu,#panel{top:var(--command-below);bottom:auto;height:auto;max-height:calc(100% - var(--command-below) - var(--mobile-nav-h,88px) - env(safe-area-inset-bottom) - 20px)}
+
+ /* The category strip scrolls sideways, but with nothing to show for it the
+    tabs past the right edge - Amenities among them - looked like they did not
+    exist. A fade on the overflowing edge says there is more to reach. */
+ #buildmenu .category-tabs{-webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%);mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 26px),transparent 100%)}
+ #buildmenu .category-tabs.tabs-end{-webkit-mask-image:none;mask-image:none}
 }
 @media screen and (max-width:390px){
  #topbar{padding-left:10px;padding-right:10px}.ledger-resources{gap:6px}.ledger-row{min-height:56px;padding:8px;grid-template-columns:32px minmax(0,1fr) auto;gap:6px}.ledger-icon{width:30px;height:30px;font-size:21px}.ledger-name{font-size:10px}.ledger-row b{font-size:17px}.ledger-head strong{font-size:22px}

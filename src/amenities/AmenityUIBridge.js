@@ -12,6 +12,18 @@
   for(const d of this.unlockedDefs())try{const card=this.buildCard(d);if(card)cards.push(card)}catch(e){console.error("Build menu: failed to render building definition",d&&d.id,e)}
   const amenity=this.category==="Amenities";
   menu.innerHTML=`<div class="panel-header"><h2>${amenity?"Amenities & Social Life":"Build"}</h2><button class="panel-close" data-act="close" aria-label="Close">×</button></div><div class="panel-scroll"><div class="category-tabs">${cats.map(c=>`<button class="${c===this.category?"active":""}" data-act="cat:${c}">${c}</button>`).join("")}</div>${amenity?'<p class="amenity-intro">Spend Gold to turn spare corners into warm public spaces. Citizens use interactive Amenities only during legitimate free time.</p>':""}<div class="${amenity?"amenity-grid":""}">${cards.join("")||"<p>Nothing unlocked here yet.</p>"}</div></div>`;
+  /* Seven categories do not fit across a phone, so the strip scrolls - but with
+     no edge treatment the ones past the right margin, Amenities included, read
+     as simply absent. Fade the overflowing edge until it is scrolled to the
+     end, and keep the selected category centred so it is never the hidden one. */
+  const tabs=menu.querySelector(".category-tabs");
+  if(tabs){
+   const mark=()=>tabs.classList.toggle("tabs-end",tabs.scrollLeft+tabs.clientWidth>=tabs.scrollWidth-2);
+   tabs.addEventListener("scroll",mark,{passive:true});
+   const act=tabs.querySelector("button.active");
+   if(act)tabs.scrollLeft=Math.max(0,act.offsetLeft+act.offsetWidth/2-tabs.clientWidth/2);
+   mark();
+  }
   this.buildSig=this.buildSignature();
  };
 })();
