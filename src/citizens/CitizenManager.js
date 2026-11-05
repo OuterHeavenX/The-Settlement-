@@ -15,5 +15,24 @@ Settlement.CitizenManager=class{
  socialTarget(){let r=this.game.roads.nearestRoadTarget();if(r)return r;let a=this.pickClaimedRect();return{x:Math.floor(a.x+1+Math.random()*Math.max(1,a.w-2)),y:Math.floor(a.y+1+Math.random()*Math.max(1,a.h-2))}}
  decide(c){let h=this.hour(),home=this.homeTarget(c),work=this.workTarget(c);if(c.state==="ARRIVING"){if(home)this.setDestination(c,home,"TRAVEL_HOME");return}if(h<6||h>=22){if(home&&c.state!=="SLEEPING"&&c.state!=="TRAVEL_HOME")this.setDestination(c,home,"TRAVEL_HOME");else if(!home)c.state="WANDERING";return}if(h>=6&&h<8){if(work&&c.state!=="TRAVEL_TO_WORK"&&c.state!=="WORKING")this.setDestination(c,work,"TRAVEL_TO_WORK");else if(!work&&c.state!=="WANDERING")this.setDestination(c,this.socialTarget(),"WANDERING");return}if(h>=8&&h<17){if(work){if(c.state!=="WORKING"&&c.state!=="TRAVEL_TO_WORK")this.setDestination(c,work,"TRAVEL_TO_WORK")}else if(c.state!=="WANDERING"&&c.state!=="SOCIALIZING")this.setDestination(c,this.socialTarget(),"WANDERING");return}if(h>=17&&h<21){if(c.state!=="SOCIALIZING")this.setDestination(c,this.socialTarget(),"SOCIALIZING");return}if(home&&c.state!=="TRAVEL_HOME"&&c.state!=="HOME")this.setDestination(c,home,"TRAVEL_HOME")}
  move(c,dt){let T=Settlement.Config.TILE;if(c.path?.length&&c.pathIndex<c.path.length){let p=c.path[c.pathIndex],tx=(p.x+.5)*T,ty=(p.y+.5)*T,dx=tx-c.x,dy=ty-c.y,d=Math.hypot(dx,dy);if(d<5){c.pathIndex++;if(c.pathIndex>=c.path.length){c.path=[];if(c.state==="TRAVEL_TO_WORK")c.state="WORKING";else if(c.state==="TRAVEL_HOME"){c.state=this.hour()<6||this.hour()>=22?"SLEEPING":"HOME"}return}}else{let mult=this.game.roads.isRoad(Math.floor(c.x/T),Math.floor(c.y/T))?this.game.roads.speedMultiplier:1;c.x+=dx/d*c.speed*mult*dt;c.y+=dy/d*c.speed*mult*dt;return}}if(c.state==="WORKING"||c.state==="HOME"||c.state==="SLEEPING")return;if(c.tx||c.ty){let dx=c.tx-c.x,dy=c.ty-c.y,d=Math.hypot(dx,dy);if(d>5){c.x+=dx/d*c.speed*dt;c.y+=dy/d*c.speed*dt}else{c.tx=0;c.ty=0}}}
- update(dt){for(let c of this.list){if(c.job==="Guard"&&this.game.guards)continue;c.nextDecision=(c.nextDecision||0)-dt;if(c.nextDecision<=0){c.nextDecision=1.2+Math.random()*.8;this.decide(c)}this.move(c,dt)}}
+ /* Open posts were only ever filled at the instant a building finished, from
+    ConstructionSystem. Anyone who arrived afterwards - every immigrant - stayed
+    Unassigned next to a workshop standing idle, with no prompt and no way to
+    notice beyond tapping the building and finding the Assign button. Posts open
+    by other routes too: a citizen leaving, a demolition, a load from save.
+    Sweep for an idle pair every few seconds and put them together. */
+ fillOpenPosts(){
+  if(!this.list.some(c=>c.job==="Unassigned"))return;
+  for(let b of this.game.buildings.list){
+   if(!b.complete)continue;
+   let d=Settlement.BuildingDefs[b.type];
+   if(!d?.workers||(b.workers||0)>=d.workers)continue;
+   if(!this.assign(b))return;
+  }
+ }
+ update(dt){
+  this.hireTimer=(this.hireTimer||0)-dt;
+  if(this.hireTimer<=0){this.hireTimer=3;try{this.fillOpenPosts()}catch(e){console.error("Citizen hiring sweep failed:",e)}}
+  for(let c of this.list){if(c.job==="Guard"&&this.game.guards)continue;c.nextDecision=(c.nextDecision||0)-dt;if(c.nextDecision<=0){c.nextDecision=1.2+Math.random()*.8;this.decide(c)}this.move(c,dt)}
+ }
 };
