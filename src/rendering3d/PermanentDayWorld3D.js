@@ -12,7 +12,24 @@ export class PermanentDayWorld3D extends LivingWorldCheckpointWorld3D{
  init(){const ok=super.init();if(!ok)return false;if(this.live)this.live.phase=()=>"DAY";this.buildWeather();console.info("The Settlement: permanent-day direct renderer active");return true}
  cyl(r1,r2,h,seg=8){const k=`pd-c${r1}|${r2}|${h}|${seg}`;if(!this._amenityGeo.has(k))this._amenityGeo.set(k,new THREE.CylinderGeometry(r1,r2,h,seg));return this._amenityGeo.get(k)}
  sph(r,ws=8,hs=6){const k=`pd-s${r}|${ws}|${hs}`;if(!this._amenityGeo.has(k))this._amenityGeo.set(k,new THREE.SphereGeometry(r,ws,hs));return this._amenityGeo.get(k)}
- part(g,geo,mat,x=0,y=0,z=0,rx=0,ry=0,rz=0){const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=false;m.receiveShadow=false;g.add(m);return m}
+ /* Two call conventions for part() exist in this renderer chain. World3D and
+    every class built on it call part(geo, mat, x, y, z, group) - about 330
+    call sites. This class and LegendsWorld3D call part(group, geo, mat, x, y,
+    z, rx, ry, rz) - about 38. Because this override sits above the others in
+    the chain, it replaced World3D's version for all of them, so the first
+    geometry-first call reached at startup built a Mesh whose geometry was
+    actually a Material; three then read morphAttributes off it and threw, and
+    boot3d caught that and fell back to 2D. The 3D renderer has not started at
+    all. Accept both shapes rather than rewriting either set of call sites. */
+ part(a,b,c,d=0,e=0,f=0,rx=0,ry=0,rz=0){
+  if(a&&a.isObject3D){
+   const m=new THREE.Mesh(b,c);m.position.set(d,e,f);m.rotation.set(rx,ry,rz);
+   m.castShadow=false;m.receiveShadow=false;a.add(m);return m;
+  }
+  const m=new THREE.Mesh(a,b);m.position.set(c,d,e);
+  m.castShadow=false;m.receiveShadow=false;
+  (f&&f.isObject3D?f:this.scene).add(m);return m;
+ }
  buildStructure(b){const d=Settlement.BuildingDefs[b.type];if(!b.complete)return super.buildStructure(b);if(d?.amenity)return this.makeAmenity(b,d);if(d?.defenseTurret)return this.makeTurret(b);return super.buildStructure(b)}
  makeAmenity(b,d){
   const g=new THREE.Group(),v=d.amenityMeta?.visualType,w=b.w*T,h=b.h*T;
