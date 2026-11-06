@@ -49,10 +49,26 @@ export class LivingWorldAtmosphereWorld3D extends MasonShowcaseWorld3D{
  }
  texture(path){if(!path)return null;if(this.livingTextures.has(path))return this.livingTextures.get(path);const t=new THREE.TextureLoader().load(path);t.colorSpace=THREE.SRGBColorSpace;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearFilter;this.livingTextures.set(path,t);return t}
  spriteMaterial(path){if(this.livingSpriteMats.has(path))return this.livingSpriteMats.get(path);const m=new THREE.SpriteMaterial({map:this.texture(path),color:0xffffff,transparent:true,depthWrite:false});this.livingSpriteMats.set(path,m);return m}
+ /* Billboard texture for a citizen, drawn by the same Settlement.VillagerArt
+    that paints them in 2D, so a settlement is peopled by the same villagers
+    whichever renderer is running. These sprites used to be PNG frames from
+    CitizenSpriteManifest, whose default family was a chibi vampire. */
+ villagerMaterial(job,id){
+  const art=this.villagerArt||(this.villagerArt=Settlement.VillagerArt?new Settlement.VillagerArt:null);
+  if(!art)return this.spriteMaterial(null);
+  const key="villager:"+(job||"Unassigned")+"|"+art.variantKey(id||0);
+  if(this.livingSpriteMats.has(key))return this.livingSpriteMats.get(key);
+  const cv=art.frame(job||"Unassigned",id||0,"idle",0,4);
+  if(!cv)return this.spriteMaterial(null);
+  const t=new THREE.CanvasTexture(cv);
+  t.colorSpace=THREE.SRGBColorSpace;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearFilter;
+  const m=new THREE.SpriteMaterial({map:t,color:0xffffff,transparent:true,depthWrite:false});
+  this.livingSpriteMats.set(key,m);return m;
+ }
  ensureCitizen(s){
   let e=this.livingSprites.get(s.id);if(e)return e;
-  const def=Settlement.CitizenSpriteManifest?.[s.job]||Settlement.CitizenSpriteManifest?.default,path=def?.idle?.[0],sprite=new THREE.Sprite(this.spriteMaterial(path)),group=new THREE.Group();
-  sprite.center.set(.5,.08);sprite.scale.set(40,57,1);sprite.position.y=28;group.add(sprite);
+  const sprite=new THREE.Sprite(this.villagerMaterial(s.job,s.id)),group=new THREE.Group();
+  sprite.center.set(.5,.06);sprite.scale.set(40,52,1);sprite.position.y=26;group.add(sprite);
   const sh=new THREE.Mesh(this.livingShadowGeo,this.livingShadowMat);sh.position.y=.45;group.add(sh);
   const tool=new THREE.Mesh(this.livingToolGeo,this.livingToolMat);tool.position.set(12,27,2);tool.visible=false;group.add(tool);
   this.livingCitizenRoot.add(group);e={group,sprite,tool};this.livingSprites.set(s.id,e);return e
