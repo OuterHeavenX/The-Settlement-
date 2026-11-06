@@ -1,5 +1,8 @@
 /* Blood & Plunder Gothic World Identity — Canvas2D presentation only. */
 Settlement.BloodWorld2D=class extends Settlement.IndustryWorld2D{
+ /* Structures that lie flat on the ground and so cast no shadow of their own. */
+ static FLAT=new Set(["farm","road","smallPark","villagePond","flowerGarden","stonePlanter"]);
+
  terrainTile(x,y,claimed){
   super.terrainTile(x,y,claimed);let c=this.ctx,T=this.T,g=this.game.gothicWorld,h=g?.hash?.(x,y,211)??.5,h2=g?.hash?.(x,y,212)??.5;
   c.save();
@@ -20,7 +23,10 @@ Settlement.BloodWorld2D=class extends Settlement.IndustryWorld2D{
   c.save();c.strokeStyle="#8b817466";c.lineWidth=1;c.beginPath();if(m&1){c.moveTo(cx,cy);c.lineTo(cx,y+4)}if(m&2){c.moveTo(cx,cy);c.lineTo(x+T-4,cy)}if(m&4){c.moveTo(cx,cy);c.lineTo(cx,y+T-4)}if(m&8){c.moveTo(cx,cy);c.lineTo(x+4,cy)}c.stroke();c.globalAlpha=.16;c.fillStyle="#d0bd96";for(let i=0;i<3;i++){let q=(this.game.gothicWorld?.hash?.(b.x+i,b.y,220+i)??.4);c.fillRect(x+14+i*15,cy-4+q*8,2,1)}c.restore();
  }
  building(b){
-  if(b.complete){let c=this.ctx,T=this.T,x=b.x*T,y=b.y*T,w=b.w*T,h=b.h*T;c.save();c.globalAlpha=.2;c.fillStyle="#080609";c.beginPath();c.ellipse(x+w*.5,y+h*.82,w*.39,Math.max(8,h*.1),0,0,7);c.fill();c.restore()}
+  /* Cast shadow, for things that stand up off the ground. A field and a road
+     are the ground, so pooling a dark ellipse in the middle of them just put a
+     stain on the soil. */
+  if(b.complete&&!Settlement.BloodWorld2D.FLAT.has(b.type)){let c=this.ctx,T=this.T,x=b.x*T,y=b.y*T,w=b.w*T,h=b.h*T;c.save();c.globalAlpha=.2;c.fillStyle="#080609";c.beginPath();c.ellipse(x+w*.5,y+h*.82,w*.39,Math.max(8,h*.1),0,0,7);c.fill();c.restore()}
   super.building(b);if(!b.complete)return;this.bloodAccent(b)
  }
  bloodAccent(b){let c=this.ctx,T=this.T,x=b.x*T,y=b.y*T,w=b.w*T,h=b.h*T,t=this.game.gothicWorld?.tierNumber(b.level||1)||1,P=Settlement.BloodWorldPalette;c.save();if(["cottage","warehouse","mainHall","bakery","mill","archery","training"].includes(b.type)){c.globalAlpha=.82;c.fillStyle=t>=4?P.roofPrestige:P.roof;c.beginPath();c.moveTo(x+5,y+h*.34);c.lineTo(x+w*.5,y+4);c.lineTo(x+w-5,y+h*.34);c.lineTo(x+w-10,y+h*.39);c.lineTo(x+10,y+h*.39);c.closePath();c.fill();c.strokeStyle="#17151b";c.lineWidth=2;c.stroke();if(t>=3){c.globalAlpha=.9;c.fillStyle=P.burgundy;c.fillRect(x+w*.17,y+h*.32,5,15);if(b.type==="mainHall"||b.type==="archery")c.fillRect(x+w*.78,y+h*.32,5,15)}}else if(b.type==="quarry"){c.globalAlpha=.28;c.fillStyle="#626873";c.beginPath();c.ellipse(x+w*.5,y+h*.58,w*.34,h*.22,0,0,7);c.fill();c.strokeStyle="#27272d";c.lineWidth=4;c.beginPath();c.moveTo(x+w*.25,y+h*.2);c.lineTo(x+w*.25,y+h*.68);c.stroke()}else if(b.type==="lumber"){c.globalAlpha=.68;c.strokeStyle="#34292c";c.lineWidth=5;for(let i=0;i<3;i++){c.beginPath();c.moveTo(x+w*.15,y+h*(.58+i*.07));c.lineTo(x+w*.74,y+h*(.58+i*.07));c.stroke()}}else if(b.type==="market"){c.globalAlpha=.9;for(let i=0;i<3;i++){c.fillStyle=i%2?P.violet:P.burgundy;c.fillRect(x+w*(.15+i*.27),y+h*.37,w*.2,7)}}else if(b.type==="ironMine"){c.globalAlpha=.3;c.fillStyle="#58606a";c.fillRect(x+w*.2,y+h*.28,w*.6,h*.5);c.globalAlpha=.8;c.strokeStyle="#242127";c.lineWidth=5;c.strokeRect(x+w*.2,y+h*.28,w*.6,h*.5)}else if(b.type==="smelter"){c.globalAlpha=.24;c.fillStyle="#18171b";c.fillRect(x+w*.14,y+h*.23,w*.72,h*.59);c.globalAlpha=.65;c.fillStyle=P.ember;c.beginPath();c.arc(x+w*.42,y+h*.62,10,0,7);c.fill()}else if(b.type==="blacksmith"){c.globalAlpha=.24;c.fillStyle="#1b191e";c.fillRect(x+w*.15,y+h*.28,w*.7,h*.55);c.globalAlpha=.55;c.fillStyle=P.ember;c.fillRect(x+w*.28,y+h*.56,w*.2,h*.12)}else if(b.type==="mason"){c.globalAlpha=.24;c.fillStyle="#737881";c.fillRect(x+w*.14,y+h*.55,w*.72,h*.22)}c.restore()}
