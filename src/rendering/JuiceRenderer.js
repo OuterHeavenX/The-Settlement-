@@ -43,7 +43,16 @@ Settlement.Renderer.prototype.drawNightLights=function(ctx,j){
  }
  ctx.globalAlpha=1;ctx.restore();
 };
-Settlement.Renderer.prototype.drawCitizenProps=function(ctx,j){let icons={Lumberjack:"🪵",Farmer:"🧺",Miller:"🌾",Baker:"🥖",Stonecutter:"🪨",Stonemason:"🧱",Archer:"🏹"};ctx.font="11px serif";ctx.textAlign="left";for(let c of this.game.citizens.list){if(c.state==="SLEEPING")continue;let icon=icons[c.job];if(icon&&(c.state==="WORKING"||c.state==="TRAVEL_TO_WORK"||c.state==="TRAVEL_HOME")){let bob=Math.sin(j.time*6+c.id)*1.5;ctx.fillText(icon,c.x+6,c.y+8+bob)}if(this.game.roads?.isRoad(Math.floor(c.x/64),Math.floor(c.y/64))&&Math.random()<.018)this.game.juice.emit("dust",c.x,c.y+14,1)}};
+Settlement.Renderer.prototype.drawCitizenProps=function(ctx,j){
+ /* Emoji trade markers used to bob beside each worker. The villagers now carry
+    the actual tool of their trade, so the emoji only doubled it - a lumberjack
+    walked around with an axe in hand and a log emoji floating off one ear.
+    Road dust stays: nothing else draws it. */
+ for(let c of this.game.citizens.list){
+  if(c.state==="SLEEPING")continue;
+  if(this.game.roads?.isRoad(Math.floor(c.x/64),Math.floor(c.y/64))&&Math.random()<.018)this.game.juice.emit("dust",c.x,c.y+14,1);
+ }
+};
 Settlement.Renderer.prototype.drawJuiceParticles=function(ctx,j){for(let p of j.particles){let a=Math.max(0,p.life/p.max);ctx.globalAlpha=a;ctx.fillStyle=p.kind==="smoke"?"#ddd7c0":p.kind==="leaf"?"#7ca34c":p.kind==="stone"?"#b9aa8b":p.kind==="spark"?"#f4d47a":"#c5aa7a";ctx.beginPath();ctx.arc(p.x,p.y,p.size*(p.kind==="smoke"?1.5:1),0,7);ctx.fill()}ctx.globalAlpha=1};
 Settlement.Renderer.prototype.drawAmbient=function(ctx,j){for(let a of j.ambient){ctx.globalAlpha=Math.min(1,a.life);ctx.fillStyle=a.kind==="bird"?"#28261f":"#e7cf64";if(a.kind==="bird"){ctx.strokeStyle="#28261f";ctx.lineWidth=2;ctx.beginPath();ctx.arc(a.x-4,a.y,6,-2.8,-.4);ctx.arc(a.x+7,a.y,6,-2.8,-.4);ctx.stroke()}else{ctx.beginPath();ctx.arc(a.x-3,a.y,3,0,7);ctx.arc(a.x+3,a.y,3,0,7);ctx.fill()}}ctx.globalAlpha=1};
 Settlement.Renderer.prototype.drawBubbles=function(ctx,j){ctx.font="11px Georgia";ctx.textAlign="center";for(let b of j.bubbles){let c=b.citizen;if(!c||c.state==="SLEEPING")continue;let w=Math.min(100,ctx.measureText(b.text).width+14),x=c.x,y=c.y-34;ctx.globalAlpha=Math.min(1,b.t);ctx.fillStyle="#f5e7c4";ctx.strokeStyle="#4a321f";ctx.lineWidth=1;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-14,w,20,6);else ctx.rect(x-w/2,y-14,w,20);ctx.fill();ctx.stroke();ctx.fillStyle="#2a2015";ctx.fillText(b.text,x,y)}ctx.globalAlpha=1};
